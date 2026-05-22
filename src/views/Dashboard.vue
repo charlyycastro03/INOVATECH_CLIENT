@@ -671,16 +671,20 @@ onMounted(() => {
 
 .glass-navbar {
   background: rgba(10, 10, 10, 0.6) !important;
-  backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  will-change: transform, backdrop-filter;
 }
 
 .glass-card, .glass-modal {
   background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4) !important;
   color: white;
+  will-change: transform, backdrop-filter;
 }
 
 .z-index-2 {

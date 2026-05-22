@@ -151,7 +151,9 @@
                   <v-col cols="12" sm="6">
                     <v-select
                       v-model="newTicket.ticketType"
-                      :items="['Incident', 'Service Request', 'Problem', 'Change']"
+                      :items="typeOptions"
+                      item-title="title"
+                      item-value="value"
                       label="Tipo de Solicitud"
                       variant="solo-filled"
                       bg-color="rgba(255,255,255,0.05)"
@@ -162,7 +164,9 @@
                   <v-col cols="12" sm="6">
                     <v-select
                       v-model="newTicket.priority"
-                      :items="['Low', 'Medium', 'High', 'Critical']"
+                      :items="priorityOptions"
+                      item-title="title"
+                      item-value="value"
                       label="Prioridad / Urgencia"
                       variant="solo-filled"
                       bg-color="rgba(255,255,255,0.05)"
@@ -422,6 +426,7 @@ const router = useRouter()
 // Datos del Cliente (Session)
 const clientName = ref('Cliente')
 const clientEmail = ref('')
+const user = ref(null)
 
 const userInitials = computed(() => {
   if (!clientName.value) return 'CL'
@@ -450,11 +455,23 @@ const createTicketDialog = ref(false)
 const isFormValid = ref(false)
 const formLoading = ref(false)
 const ticketForm = ref(null)
+const priorityOptions = ref([
+  { title: 'Baja', value: 'Low' },
+  { title: 'Media', value: 'Medium' },
+  { title: 'Alta', value: 'High' },
+  { title: 'Crítica', value: 'Critical' }
+])
+const typeOptions = ref([
+  { title: 'Incidente', value: 'Incident' },
+  { title: 'Requerimiento', value: 'Service Request' },
+  { title: 'Problema', value: 'Problem' },
+  { title: 'Cambio', value: 'Change' }
+])
 const newTicket = ref({
   title: '',
-  category: 1,
+  category: null,
   description: '',
-  priority: 'Low',
+  priority: 'Medium',
   ticketType: 'Incident',
   contactPhone: '',
   location: '',
@@ -677,12 +694,22 @@ onMounted(() => {
   will-change: transform, backdrop-filter;
 }
 
-.glass-card, .glass-modal {
+.glass-card {
   background: rgba(255, 255, 255, 0.03) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4) !important;
+  color: white;
+  will-change: transform, backdrop-filter;
+}
+
+.glass-modal {
+  background: rgba(15, 20, 25, 0.95) !important; /* Much more solid background for readability */
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
   color: white;
   will-change: transform, backdrop-filter;
 }

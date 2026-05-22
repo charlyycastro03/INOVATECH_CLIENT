@@ -118,31 +118,131 @@
             
             <v-card-text class="pt-4">
               <v-form ref="ticketForm" v-model="isFormValid">
-                <v-text-field
-                  v-model="newTicket.title"
-                  label="Asunto / Título Breve"
-                  placeholder="Ej: Problema al conectar a la VPN"
-                  variant="solo-filled"
-                  bg-color="rgba(255,255,255,0.05)"
-                  :rules="[v => !!v || 'El asunto es obligatorio']"
-                  :disabled="formLoading"
-                  class="mb-3 custom-input"
-                  required
-                ></v-text-field>
+                <!-- Detalles Principales -->
+                <v-row>
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                      v-model="newTicket.title"
+                      label="Asunto / Título Breve"
+                      placeholder="Ej: Problema con el ERP"
+                      variant="solo-filled"
+                      bg-color="rgba(255,255,255,0.05)"
+                      :rules="[v => !!v || 'El asunto es obligatorio']"
+                      :disabled="formLoading"
+                      class="custom-input"
+                      required
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-select
+                      v-model="newTicket.category"
+                      :items="categories"
+                      item-title="Name"
+                      item-value="CategoryID"
+                      label="Categoría del Problema"
+                      variant="solo-filled"
+                      bg-color="rgba(255,255,255,0.05)"
+                      :rules="[v => !!v || 'Selecciona una categoría']"
+                      :disabled="formLoading"
+                      class="custom-input"
+                      required
+                    ></v-select>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-select
+                      v-model="newTicket.ticketType"
+                      :items="['Incident', 'Service Request', 'Problem', 'Change']"
+                      label="Tipo de Solicitud"
+                      variant="solo-filled"
+                      bg-color="rgba(255,255,255,0.05)"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-select>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-select
+                      v-model="newTicket.priority"
+                      :items="['Low', 'Medium', 'High', 'Critical']"
+                      label="Prioridad / Urgencia"
+                      variant="solo-filled"
+                      bg-color="rgba(255,255,255,0.05)"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-select>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                      v-model="newTicket.contactPhone"
+                      label="Teléfono de Contacto"
+                      placeholder="Ej: +52 555 123 4567"
+                      variant="solo-filled"
+                      bg-color="rgba(255,255,255,0.05)"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                      v-model="newTicket.location"
+                      label="Ubicación / Sucursal"
+                      placeholder="Ej: Oficina Central MTY"
+                      variant="solo-filled"
+                      bg-color="rgba(255,255,255,0.05)"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
 
-                <v-select
-                  v-model="newTicket.category"
-                  :items="categories"
-                  item-title="name"
-                  item-value="id"
-                  label="Categoría del Problema"
-                  variant="solo-filled"
-                  bg-color="rgba(255,255,255,0.05)"
-                  :rules="[v => !!v || 'Selecciona una categoría']"
-                  :disabled="formLoading"
-                  class="mb-3 custom-input"
-                  required
-                ></v-select>
+                <!-- Panel Colapsable de Activos -->
+                <v-expansion-panels class="mb-4 glass-expansion" variant="accordion">
+                  <v-expansion-panel bg-color="rgba(255,255,255,0.02)">
+                    <v-expansion-panel-title class="text-white font-weight-bold">
+                      <v-icon left class="mr-2" color="primary">mdi-laptop</v-icon>
+                      Detalles del Equipo / Activo (Opcional)
+                    </v-expansion-panel-title>
+                    <v-expansion-panel-text>
+                      <v-row class="pt-2">
+                        <v-col cols="12" sm="4">
+                          <v-text-field
+                            v-model="newTicket.model"
+                            label="Marca y Modelo"
+                            placeholder="Ej: Dell Latitude"
+                            variant="solo-filled"
+                            bg-color="rgba(255,255,255,0.05)"
+                            :disabled="formLoading"
+                            class="custom-input mb-0"
+                            hide-details
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="4">
+                          <v-text-field
+                            v-model="newTicket.serialNumber"
+                            label="Número de Serie"
+                            placeholder="Ej: SN-987654"
+                            variant="solo-filled"
+                            bg-color="rgba(255,255,255,0.05)"
+                            :disabled="formLoading"
+                            class="custom-input mb-0"
+                            hide-details
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="4">
+                          <v-text-field
+                            v-model="newTicket.assetNumber"
+                            label="Placa de Activo"
+                            placeholder="Ej: INV-00123"
+                            variant="solo-filled"
+                            bg-color="rgba(255,255,255,0.05)"
+                            :disabled="formLoading"
+                            class="custom-input mb-0"
+                            hide-details
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                </v-expansion-panels>
 
                 <v-textarea
                   v-model="newTicket.description"
@@ -150,7 +250,7 @@
                   placeholder="Describe de la manera más clara el problema."
                   variant="solo-filled"
                   bg-color="rgba(255,255,255,0.05)"
-                  rows="4"
+                  rows="3"
                   :rules="[v => !!v || 'La descripción es obligatoria']"
                   :disabled="formLoading"
                   class="custom-input"
@@ -185,20 +285,38 @@
             <v-card-text class="pa-6 text-white" style="max-height: 60vh;">
               <!-- Ficha técnica del ticket -->
               <v-row class="mb-6 rounded-lg pa-3 mx-0" style="background: rgba(255,255,255,0.05);">
-                <v-col cols="12" sm="4" class="py-1">
+                <v-col cols="12" sm="4" md="3" class="py-1">
                   <div class="text-caption text-grey-lighten-1">Estado</div>
                   <v-chip :color="getStatusColor(selectedTicket.Status)" size="small" class="font-weight-bold text-uppercase" variant="flat">
                     {{ translateStatus(selectedTicket.Status) }}
                   </v-chip>
                 </v-col>
-                <v-col cols="12" sm="4" class="py-1">
+                <v-col cols="12" sm="4" md="3" class="py-1">
                   <div class="text-caption text-grey-lighten-1">Categoría</div>
-                  <div class="font-weight-bold">{{ selectedTicket.CategoryName || 'General' }}</div>
+                  <div class="font-weight-bold text-truncate">{{ selectedTicket.CategoryName || 'General' }}</div>
                 </v-col>
-                <v-col cols="12" sm="4" class="py-1">
+                <v-col cols="12" sm="4" md="3" class="py-1">
+                  <div class="text-caption text-grey-lighten-1">Prioridad</div>
+                  <div class="font-weight-bold text-warning">{{ selectedTicket.Priority || 'Medium' }}</div>
+                </v-col>
+                <v-col cols="12" sm="6" md="3" class="py-1">
                   <div class="text-caption text-grey-lighten-1">Atendido Por</div>
-                  <div class="font-weight-bold text-primary">
-                    {{ selectedTicket.AssignedEngineerName || 'Cola de Espera' }}
+                  <div class="font-weight-bold text-primary text-truncate">
+                    {{ selectedTicket.AssignedEngineerName || 'En Cola' }}
+                  </div>
+                </v-col>
+                <v-col cols="12" sm="6" md="3" class="py-1 mt-2" v-if="selectedTicket.Location">
+                  <div class="text-caption text-grey-lighten-1">Ubicación</div>
+                  <div class="font-weight-bold text-truncate">{{ selectedTicket.Location }}</div>
+                </v-col>
+                <v-col cols="12" sm="6" md="3" class="py-1 mt-2" v-if="selectedTicket.ContactPhone">
+                  <div class="text-caption text-grey-lighten-1">Teléfono</div>
+                  <div class="font-weight-bold text-truncate">{{ selectedTicket.ContactPhone }}</div>
+                </v-col>
+                <v-col cols="12" sm="12" md="6" class="py-1 mt-2" v-if="selectedTicket.Model || selectedTicket.SerialNumber || selectedTicket.AssetNumber">
+                  <div class="text-caption text-grey-lighten-1">Equipo / Activo</div>
+                  <div class="font-weight-bold text-truncate">
+                    {{ [selectedTicket.Model, selectedTicket.SerialNumber, selectedTicket.AssetNumber].filter(Boolean).join(' | ') }}
                   </div>
                 </v-col>
               </v-row>
@@ -335,15 +453,37 @@ const ticketForm = ref(null)
 const newTicket = ref({
   title: '',
   category: 1,
-  description: ''
+  description: '',
+  priority: 'Low',
+  ticketType: 'Incident',
+  contactPhone: '',
+  location: '',
+  serialNumber: '',
+  model: '',
+  assetNumber: '',
+  impactLevel: 'Low'
 })
 
-const categories = [
-  { id: 1, name: 'Soporte General' },
-  { id: 2, name: 'Redes y Conectividad' },
-  { id: 3, name: 'Hardware y Equipos' },
-  { id: 4, name: 'Sistemas y Software' },
-]
+const categories = ref([])
+
+const fetchCategories = async () => {
+  try {
+    const response = await api.get('/api/client/categories')
+    categories.value = response.data
+    if (categories.value.length > 0) {
+      newTicket.value.category = categories.value[0].CategoryID
+    }
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+    // Fallback in case of error
+    categories.value = [
+      { CategoryID: 1, Name: 'Soporte General' },
+      { CategoryID: 2, Name: 'Hardware' },
+      { CategoryID: 3, Name: 'Software' },
+      { CategoryID: 4, Name: 'Red / Conectividad' }
+    ]
+  }
+}
 
 // Diálogo de Detalles del ticket
 const detailsDialog = ref(false)
@@ -398,7 +538,19 @@ const fetchTickets = async () => {
 
 // Abrir diálogo de creación
 const openNewTicketDialog = () => {
-  newTicket.value = { title: '', category: 1, description: '' }
+  newTicket.value = {
+    title: '',
+    category: categories.value.length > 0 ? categories.value[0].CategoryID : 1,
+    description: '',
+    priority: 'Low',
+    ticketType: 'Incident',
+    contactPhone: '',
+    location: '',
+    serialNumber: '',
+    model: '',
+    assetNumber: '',
+    impactLevel: 'Low'
+  }
   createTicketDialog.value = true
   if (ticketForm.value) ticketForm.value.resetValidation()
 }
@@ -411,7 +563,15 @@ const submitTicket = async () => {
     await api.post('/api/client/tickets', {
       title: newTicket.value.title,
       category: newTicket.value.category,
-      description: newTicket.value.description
+      description: newTicket.value.description,
+      priority: newTicket.value.priority,
+      ticketType: newTicket.value.ticketType,
+      contactPhone: newTicket.value.contactPhone,
+      location: newTicket.value.location,
+      serialNumber: newTicket.value.serialNumber,
+      model: newTicket.value.model,
+      assetNumber: newTicket.value.assetNumber,
+      impactLevel: newTicket.value.impactLevel
     })
     globalMsg.value = '¡Tu ticket ha sido creado con éxito! Le daremos seguimiento a la brevedad.'
     globalMsgType.value = 'success'
@@ -490,6 +650,7 @@ onMounted(() => {
     }
   }
   
+  fetchCategories()
   fetchTickets()
 })
 </script>
@@ -576,5 +737,14 @@ onMounted(() => {
 }
 .gap-4 {
   gap: 16px;
+}
+
+.glass-expansion :deep(.v-expansion-panel) {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+.glass-expansion :deep(.v-expansion-panel-title) {
+  padding: 12px 16px;
 }
 </style>

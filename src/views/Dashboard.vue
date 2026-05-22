@@ -1,5 +1,5 @@
 <template>
-  <v-app id="inspire" class="dark-theme">
+  <div class="dashboard-wrapper w-100 h-100">
     <!-- Navbar Premium -->
     <v-app-bar flat class="glass-navbar px-4" border="b">
       <div class="d-flex align-center">
@@ -291,7 +291,7 @@
         </v-dialog>
       </v-container>
     </v-main>
-  </v-app>
+  </div>
 </template>
 
 <script setup>

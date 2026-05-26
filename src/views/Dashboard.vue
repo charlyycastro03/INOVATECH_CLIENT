@@ -11,7 +11,6 @@
           <div class="text-caption text-grey-lighten-1">{{ clientName }} ({{ clientEmail }})</div>
         </div>
       </div>
-      </div>
       <v-spacer></v-spacer>
       <v-btn icon variant="text" @click="toggleTheme" class="mr-3" color="white">
         <v-icon>{{ isDarkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>

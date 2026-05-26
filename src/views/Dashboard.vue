@@ -7,12 +7,12 @@
           <span class="text-white font-weight-bold">{{ userInitials }}</span>
         </v-avatar>
         <div>
-          <div class="text-subtitle-1 font-weight-bold text-white">Portal de Soporte</div>
+          <div class="text-subtitle-1 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Portal de Soporte</div>
           <div class="text-caption text-grey-lighten-1">{{ clientName }} ({{ clientEmail }})</div>
         </div>
       </div>
       <v-spacer></v-spacer>
-      <v-btn icon variant="text" @click="toggleTheme" class="mr-3" color="white">
+      <v-btn icon variant="text" @click="toggleTheme" class="mr-3" :color="isDarkTheme ? 'white' : 'black'">
         <v-icon>{{ isDarkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
       <v-btn variant="outlined" color="error" prepend-icon="mdi-logout" @click="logout" class="rounded-lg">
@@ -115,8 +115,8 @@
         <v-dialog v-model="createTicketDialog" max-width="600px" persistent>
           <v-card class="glass-modal rounded-xl pa-4">
             <v-card-title class="d-flex justify-space-between align-center px-4">
-              <span class="text-h5 font-weight-bold text-white">Crear Solicitud de Soporte</span>
-              <v-btn icon="mdi-close" color="white" variant="text" @click="createTicketDialog = false" :disabled="formLoading"></v-btn>
+              <span class="text-h5 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Crear Solicitud de Soporte</span>
+              <v-btn icon="mdi-close" :color="isDarkTheme ? 'white' : 'black'" variant="text" @click="createTicketDialog = false" :disabled="formLoading"></v-btn>
             </v-card-title>
             
             <v-card-text class="pt-4">
@@ -129,7 +129,7 @@
                       label="Asunto / Título Breve"
                       placeholder="Ej: Problema con el ERP"
                       variant="solo-filled"
-                      bg-color="rgba(255,255,255,0.05)"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :rules="[v => !!v || 'El asunto es obligatorio']"
                       :disabled="formLoading"
                       class="custom-input"
@@ -144,7 +144,7 @@
                       item-value="CategoryID"
                       label="Categoría del Problema"
                       variant="solo-filled"
-                      bg-color="rgba(255,255,255,0.05)"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :rules="[v => !!v || 'Selecciona una categoría']"
                       :disabled="formLoading"
                       class="custom-input"
@@ -159,7 +159,7 @@
                       item-value="value"
                       label="Tipo de Solicitud"
                       variant="solo-filled"
-                      bg-color="rgba(255,255,255,0.05)"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
                     ></v-select>
@@ -172,7 +172,7 @@
                       item-value="value"
                       label="Prioridad / Urgencia"
                       variant="solo-filled"
-                      bg-color="rgba(255,255,255,0.05)"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
                     ></v-select>
@@ -183,7 +183,7 @@
                       label="Teléfono de Contacto"
                       placeholder="Ej: +52 555 123 4567"
                       variant="solo-filled"
-                      bg-color="rgba(255,255,255,0.05)"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
                     ></v-text-field>
@@ -194,7 +194,7 @@
                       label="Ubicación / Sucursal"
                       placeholder="Ej: Oficina Central MTY"
                       variant="solo-filled"
-                      bg-color="rgba(255,255,255,0.05)"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
                     ></v-text-field>
@@ -205,7 +205,7 @@
                       label="Dirección de Contacto"
                       placeholder="Ej: Av. Principal 123"
                       variant="solo-filled"
-                      bg-color="rgba(255,255,255,0.05)"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
                     ></v-text-field>
@@ -223,8 +223,8 @@
 
                 <!-- Panel Colapsable de Activos -->
                 <v-expansion-panels v-if="enableAssetPlate" class="mb-4 glass-expansion" variant="accordion">
-                  <v-expansion-panel bg-color="rgba(255,255,255,0.02)">
-                    <v-expansion-panel-title class="text-white font-weight-bold">
+                  <v-expansion-panel :bg-color="isDarkTheme ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'">
+                    <v-expansion-panel-title class="font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
                       <v-icon left class="mr-2" color="primary">mdi-laptop</v-icon>
                       Detalles del Equipo / Activo (Opcional)
                     </v-expansion-panel-title>
@@ -236,7 +236,7 @@
                             label="Marca y Modelo"
                             placeholder="Ej: Dell Latitude"
                             variant="solo-filled"
-                            bg-color="rgba(255,255,255,0.05)"
+                            :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                             :disabled="formLoading"
                             class="custom-input mb-0"
                             hide-details
@@ -248,7 +248,7 @@
                             label="Número de Serie"
                             placeholder="Ej: SN-987654"
                             variant="solo-filled"
-                            bg-color="rgba(255,255,255,0.05)"
+                            :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                             :disabled="formLoading"
                             class="custom-input mb-0"
                             hide-details
@@ -260,7 +260,7 @@
                             label="Placa de Activo"
                             placeholder="Ej: INV-00123"
                             variant="solo-filled"
-                            bg-color="rgba(255,255,255,0.05)"
+                            :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                             :disabled="formLoading"
                             class="custom-input mb-0"
                             hide-details
@@ -278,7 +278,7 @@
                   placeholder="Selecciona un archivo"
                   prepend-icon="mdi-camera"
                   variant="solo-filled"
-                  bg-color="rgba(255,255,255,0.05)"
+                  :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                   accept="image/*,video/*"
                   :disabled="formLoading"
                   class="custom-input mb-4"
@@ -291,7 +291,7 @@
                   label="Descripción Detallada"
                   placeholder="Describe de la manera más clara el problema."
                   variant="solo-filled"
-                  bg-color="rgba(255,255,255,0.05)"
+                  :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                   rows="3"
                   :rules="[v => !!v || 'La descripción es obligatoria']"
                   :disabled="formLoading"
@@ -324,9 +324,9 @@
               <v-btn icon="mdi-close" color="white" variant="text" @click="detailsDialog = false"></v-btn>
             </v-card-title>
             
-            <v-card-text class="pa-6 text-white" style="max-height: 60vh;">
+            <v-card-text class="pa-6" :class="isDarkTheme ? 'text-white' : 'text-black'" style="max-height: 60vh;">
               <!-- Ficha técnica del ticket -->
-              <v-row class="mb-6 rounded-lg pa-3 mx-0" style="background: rgba(255,255,255,0.05);">
+              <v-row class="mb-6 rounded-lg pa-3 mx-0" :style="{ background: isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }">
                 <v-col cols="12" sm="4" md="3" class="py-1">
                   <div class="text-caption text-grey-lighten-1">Estado</div>
                   <v-chip :color="getStatusColor(selectedTicket.Status)" size="small" class="font-weight-bold text-uppercase" variant="flat">
@@ -373,7 +373,7 @@
                   <span class="text-caption text-grey-lighten-1 ml-3">{{ formatDate(selectedTicket.CreatedAt) }}</span>
                 </div>
                 <v-card variant="tonal" color="primary" class="pa-4 rounded-lg">
-                  <div class="text-body-1 whitespace-pre-line text-white">{{ selectedTicket.Message }}</div>
+                  <div class="text-body-1 whitespace-pre-line" :class="isDarkTheme ? 'text-white' : 'text-black'">{{ selectedTicket.Message }}</div>
                 </v-card>
               </div>
 
@@ -403,7 +403,7 @@
                 </v-row>
               </div>
 
-              <v-divider class="my-4 border-opacity-25" color="white"></v-divider>
+              <v-divider class="my-4 border-opacity-25" :color="isDarkTheme ? 'white' : 'black'"></v-divider>
 
               <!-- Historial de Respuestas -->
               <h4 class="text-subtitle-1 font-weight-bold mb-4">Respuestas y Seguimiento</h4>
@@ -430,18 +430,18 @@
                   </div>
                   
                   <v-card
-                    :color="msg.UserID === selectedTicket.UserID ? 'rgba(255,255,255,0.1)' : 'rgba(33,150,243,0.15)'"
+                    :color="msg.UserID === selectedTicket.UserID ? (isDarkTheme ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'rgba(33,150,243,0.15)'"
                     flat
                     class="pa-3 rounded-lg border border-opacity-10"
                     style="max-width: 85%;"
                   >
-                    <div class="text-body-2 whitespace-pre-line text-white">{{ msg.Message }}</div>
+                    <div class="text-body-2 whitespace-pre-line" :class="isDarkTheme ? 'text-white' : 'text-black'">{{ msg.Message }}</div>
                   </v-card>
                 </div>
               </div>
             </v-card-text>
 
-            <v-divider class="border-opacity-25" color="white"></v-divider>
+            <v-divider class="border-opacity-25" :color="isDarkTheme ? 'white' : 'black'"></v-divider>
 
             <!-- Campo para Agregar Respuesta -->
             <v-card-actions class="pa-4 d-flex flex-column" v-if="selectedTicket.Status !== 'Closed' && selectedTicket.Status !== 'Resolved'">
@@ -450,7 +450,7 @@
                   v-model="replyText"
                   label="Escribe tu respuesta..."
                   variant="solo-filled"
-                  bg-color="rgba(255,255,255,0.05)"
+                  :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                   rows="2"
                   hide-details
                   :disabled="replyLoading"
@@ -467,7 +467,7 @@
                 ></v-btn>
               </div>
             </v-card-actions>
-            <v-card-actions class="pa-4 justify-center" style="background: rgba(255,255,255,0.02);" v-else>
+            <v-card-actions class="pa-4 justify-center" :style="{ background: isDarkTheme ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }" v-else>
               <span class="text-caption text-grey-lighten-1 font-weight-bold">
                 <v-icon left size="small">mdi-lock</v-icon>
                 Este ticket ha sido resuelto o cerrado y no admite más respuestas.

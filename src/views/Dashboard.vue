@@ -210,6 +210,28 @@
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                      v-model="newTicket.model"
+                      label="Marca y Modelo (Opcional)"
+                      placeholder="Ej: Dell Latitude"
+                      variant="solo-filled"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                      v-model="newTicket.serialNumber"
+                      label="Número de Serie (Opcional)"
+                      placeholder="Ej: SN-987654"
+                      variant="solo-filled"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-text-field>
+                  </v-col>
                 </v-row>
 
                 <!-- Switch para activar Placa de Activo -->
@@ -673,9 +695,10 @@ const submitTicket = async () => {
     formData.append('location', newTicket.value.location)
     formData.append('impactLevel', newTicket.value.impactLevel)
 
-    if (enableAssetPlate.value) {
-      formData.append('serialNumber', newTicket.value.serialNumber)
-      formData.append('model', newTicket.value.model)
+    if (newTicket.value.model) formData.append('model', newTicket.value.model)
+    if (newTicket.value.serialNumber) formData.append('serialNumber', newTicket.value.serialNumber)
+
+    if (enableAssetPlate.value && newTicket.value.assetNumber) {
       formData.append('assetNumber', newTicket.value.assetNumber)
     }
 

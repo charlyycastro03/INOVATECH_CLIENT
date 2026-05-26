@@ -61,7 +61,8 @@
                 <v-form @submit.prevent="registerAccount">
                   <v-text-field v-model="regForm.fullName" label="Nombre Completo" variant="solo-filled" class="custom-input mb-2" bg-color="rgba(255,255,255,0.05)" rounded="lg" prepend-inner-icon="mdi-account" required></v-text-field>
                   <v-text-field v-model="regForm.email" label="Correo Electrónico" type="email" variant="solo-filled" class="custom-input mb-2" bg-color="rgba(255,255,255,0.05)" rounded="lg" prepend-inner-icon="mdi-email" required></v-text-field>
-                  <v-text-field v-model="regForm.phone" label="Teléfono" variant="solo-filled" class="custom-input mb-2" bg-color="rgba(255,255,255,0.05)" rounded="lg" prepend-inner-icon="mdi-phone"></v-text-field>
+                  <v-text-field v-model="regForm.phone" label="Teléfono" variant="solo-filled" class="custom-input mb-2" bg-color="rgba(255,255,255,0.05)" rounded="lg" prepend-inner-icon="mdi-phone" required></v-text-field>
+                  <v-text-field v-model="regForm.address" label="Dirección Completa" variant="solo-filled" class="custom-input mb-2" bg-color="rgba(255,255,255,0.05)" rounded="lg" prepend-inner-icon="mdi-map-marker" required></v-text-field>
                   
                   <v-row>
                     <v-col cols="12" sm="6" class="py-0">
@@ -131,6 +132,7 @@ const regForm = ref({
   fullName: '',
   email: '',
   phone: '',
+  address: '',
   company: '',
   department: '',
   position: ''

@@ -11,19 +11,23 @@
           <div class="text-caption text-grey-lighten-1">{{ clientName }} ({{ clientEmail }})</div>
         </div>
       </div>
+      </div>
       <v-spacer></v-spacer>
+      <v-btn icon variant="text" @click="toggleTheme" class="mr-3" color="white">
+        <v-icon>{{ isDarkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+      </v-btn>
       <v-btn variant="outlined" color="error" prepend-icon="mdi-logout" @click="logout" class="rounded-lg">
         Cerrar Sesión
       </v-btn>
     </v-app-bar>
 
-    <v-main class="bg-dark">
-      <div class="bg-overlay"></div>
+    <v-main :class="isDarkTheme ? 'bg-dark' : 'bg-grey-lighten-4'">
+      <div v-if="isDarkTheme" class="bg-overlay"></div>
       <v-container class="py-8 z-index-2 position-relative">
         <!-- Main Dashboard Header -->
         <v-row class="mb-4 align-center">
           <v-col cols="12" sm="8">
-            <h1 class="text-h4 font-weight-black text-white gradient-text">Resumen Principal</h1>
+            <h1 class="text-h4 font-weight-black gradient-text" :class="isDarkTheme ? 'text-white' : 'text-black'">Resumen Principal</h1>
             <p class="text-body-1 text-grey-lighten-1 mt-1">Bienvenido a tu centro de soporte inteligente.</p>
           </v-col>
           <v-col cols="12" sm="4" class="text-sm-right">
@@ -41,7 +45,7 @@
                 <v-icon size="30">mdi-ticket-confirmation</v-icon>
               </v-avatar>
               <div>
-                <div class="text-h4 font-weight-black text-white">{{ tickets.length }}</div>
+                <div class="text-h4 font-weight-black" :class="isDarkTheme ? 'text-white' : 'text-black'">{{ tickets.length }}</div>
                 <div class="text-subtitle-2 text-grey-lighten-1">Total de Tickets</div>
               </div>
             </v-card>
@@ -52,7 +56,7 @@
                 <v-icon size="30">mdi-alert-circle-outline</v-icon>
               </v-avatar>
               <div>
-                <div class="text-h4 font-weight-black text-white">{{ openTickets }}</div>
+                <div class="text-h4 font-weight-black" :class="isDarkTheme ? 'text-white' : 'text-black'">{{ openTickets }}</div>
                 <div class="text-subtitle-2 text-grey-lighten-1">Tickets Abiertos</div>
               </div>
             </v-card>
@@ -63,7 +67,7 @@
                 <v-icon size="30">mdi-check-circle-outline</v-icon>
               </v-avatar>
               <div>
-                <div class="text-h4 font-weight-black text-white">{{ closedTickets }}</div>
+                <div class="text-h4 font-weight-black" :class="isDarkTheme ? 'text-white' : 'text-black'">{{ closedTickets }}</div>
                 <div class="text-subtitle-2 text-grey-lighten-1">Tickets Resueltos</div>
               </div>
             </v-card>
@@ -79,15 +83,15 @@
         <v-row>
           <v-col cols="12">
             <v-card class="glass-card rounded-xl pa-2">
-              <v-card-title class="text-h6 font-weight-bold text-white px-4 pt-4">Historial de Casos</v-card-title>
+              <v-card-title class="text-h6 font-weight-bold px-4 pt-4" :class="isDarkTheme ? 'text-white' : 'text-black'">Historial de Casos</v-card-title>
               <v-data-table
                 :headers="headers"
                 :items="tickets"
                 :loading="loading"
                 loading-text="Cargando tus tickets..."
                 no-data-text="No tienes ningún ticket de soporte registrado aún."
-                class="bg-transparent text-white custom-table"
-                theme="dark"
+                class="bg-transparent custom-table"
+                :theme="isDarkTheme ? 'dark' : 'light'"
               >
                 <template v-slot:item.TrackingID="{ item }">
                   <span class="font-weight-bold text-primary">{{ item.TrackingID }}</span>
@@ -196,10 +200,30 @@
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
+                  <v-col cols="12" sm="12">
+                    <v-text-field
+                      v-model="newTicket.contactAddress"
+                      label="Dirección de Contacto"
+                      placeholder="Ej: Av. Principal 123"
+                      variant="solo-filled"
+                      bg-color="rgba(255,255,255,0.05)"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-text-field>
+                  </v-col>
                 </v-row>
 
+                <!-- Switch para activar Placa de Activo -->
+                <v-switch
+                  v-model="enableAssetPlate"
+                  label="Habilitar Detalles de Equipo / Placa de Activo"
+                  color="primary"
+                  class="mb-2"
+                  hide-details
+                ></v-switch>
+
                 <!-- Panel Colapsable de Activos -->
-                <v-expansion-panels class="mb-4 glass-expansion" variant="accordion">
+                <v-expansion-panels v-if="enableAssetPlate" class="mb-4 glass-expansion" variant="accordion">
                   <v-expansion-panel bg-color="rgba(255,255,255,0.02)">
                     <v-expansion-panel-title class="text-white font-weight-bold">
                       <v-icon left class="mr-2" color="primary">mdi-laptop</v-icon>
@@ -247,6 +271,21 @@
                     </v-expansion-panel-text>
                   </v-expansion-panel>
                 </v-expansion-panels>
+
+                <!-- Adjuntos -->
+                <v-file-input
+                  v-model="newTicket.photo"
+                  label="Adjuntar Evidencia (Foto/Video)"
+                  placeholder="Selecciona un archivo"
+                  prepend-icon="mdi-camera"
+                  variant="solo-filled"
+                  bg-color="rgba(255,255,255,0.05)"
+                  accept="image/*,video/*"
+                  :disabled="formLoading"
+                  class="custom-input mb-4"
+                  show-size
+                  clearable
+                ></v-file-input>
 
                 <v-textarea
                   v-model="newTicket.description"
@@ -339,6 +378,32 @@
                 </v-card>
               </div>
 
+              <!-- Adjuntos -->
+              <div v-if="ticketAttachments.length > 0" class="mb-6">
+                <h4 class="text-subtitle-1 font-weight-bold mb-3">Evidencia Adjunta</h4>
+                <v-row>
+                  <v-col v-for="att in ticketAttachments" :key="att.AttachmentID" cols="12" sm="6" md="4">
+                    <v-card class="pa-2 rounded-lg text-center bg-surface" border>
+                      <v-img v-if="att.FileType.startsWith('image/')" :src="att.FileData" height="150" cover class="rounded-lg mb-2"></v-img>
+                      <video v-else-if="att.FileType.startsWith('video/')" :src="att.FileData" controls height="150" class="w-100 rounded-lg mb-2 bg-black"></video>
+                      <v-icon v-else size="48" color="grey" class="my-4">mdi-file-document-outline</v-icon>
+                      <div class="text-caption text-truncate px-2">{{ att.FileName }}</div>
+                      <v-btn
+                        variant="text"
+                        color="primary"
+                        size="small"
+                        block
+                        class="mt-1"
+                        :href="att.FileData"
+                        :download="att.FileName"
+                      >
+                        Descargar
+                      </v-btn>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </div>
+
               <v-divider class="my-4 border-opacity-25" color="white"></v-divider>
 
               <!-- Historial de Respuestas -->
@@ -417,15 +482,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTheme } from 'vuetify'
 import api from '../plugins/axios'
 
 const router = useRouter()
+const theme = useTheme()
+
+const isDarkTheme = computed(() => theme.global.name.value === 'dark')
+
+const toggleTheme = () => {
+  theme.global.name.value = isDarkTheme.value ? 'light' : 'dark'
+  localStorage.setItem('portal_theme', theme.global.name.value)
+}
 
 // Datos del Cliente (Session)
 const clientName = ref('Cliente')
 const clientEmail = ref('')
+const clientPhone = ref('')
+const clientAddress = ref('')
 const user = ref(null)
 
 const userInitials = computed(() => {
@@ -474,12 +550,16 @@ const newTicket = ref({
   priority: 'Medium',
   ticketType: 'Incident',
   contactPhone: '',
+  contactAddress: '',
   location: '',
   serialNumber: '',
   model: '',
   assetNumber: '',
-  impactLevel: 'Low'
+  impactLevel: 'Low',
+  photo: null
 })
+
+const enableAssetPlate = ref(false)
 
 const categories = ref([])
 
@@ -506,6 +586,7 @@ const fetchCategories = async () => {
 const detailsDialog = ref(false)
 const selectedTicket = ref(null)
 const ticketMessages = ref([])
+const ticketAttachments = ref([])
 const replyText = ref('')
 const replyLoading = ref(false)
 
@@ -553,7 +634,6 @@ const fetchTickets = async () => {
   }
 }
 
-// Abrir diálogo de creación
 const openNewTicketDialog = () => {
   newTicket.value = {
     title: '',
@@ -561,13 +641,16 @@ const openNewTicketDialog = () => {
     description: '',
     priority: 'Low',
     ticketType: 'Incident',
-    contactPhone: '',
+    contactPhone: clientPhone.value || '',
+    contactAddress: clientAddress.value || '',
     location: '',
     serialNumber: '',
     model: '',
     assetNumber: '',
-    impactLevel: 'Low'
+    impactLevel: 'Low',
+    photo: null
   }
+  enableAssetPlate.value = false
   createTicketDialog.value = true
   if (ticketForm.value) ticketForm.value.resetValidation()
 }
@@ -577,19 +660,35 @@ const submitTicket = async () => {
   if (!newTicket.value.title || !newTicket.value.description) return
   formLoading.value = true
   try {
-    await api.post('/api/client/tickets', {
-      title: newTicket.value.title,
-      category: newTicket.value.category,
-      description: newTicket.value.description,
-      priority: newTicket.value.priority,
-      ticketType: newTicket.value.ticketType,
-      contactPhone: newTicket.value.contactPhone,
-      location: newTicket.value.location,
-      serialNumber: newTicket.value.serialNumber,
-      model: newTicket.value.model,
-      assetNumber: newTicket.value.assetNumber,
-      impactLevel: newTicket.value.impactLevel
+    const formData = new FormData()
+    formData.append('title', newTicket.value.title)
+    formData.append('category', newTicket.value.category)
+    formData.append('description', newTicket.value.description)
+    formData.append('priority', newTicket.value.priority)
+    formData.append('ticketType', newTicket.value.ticketType)
+    formData.append('contactPhone', newTicket.value.contactPhone)
+    formData.append('contactAddress', newTicket.value.contactAddress)
+    formData.append('location', newTicket.value.location)
+    formData.append('impactLevel', newTicket.value.impactLevel)
+
+    if (enableAssetPlate.value) {
+      formData.append('serialNumber', newTicket.value.serialNumber)
+      formData.append('model', newTicket.value.model)
+      formData.append('assetNumber', newTicket.value.assetNumber)
+    }
+
+    if (newTicket.value.photo) {
+      // In Vuetify 3, file inputs often give an array. Check if it's an array.
+      const photoFile = Array.isArray(newTicket.value.photo) ? newTicket.value.photo[0] : newTicket.value.photo;
+      if (photoFile) {
+        formData.append('photo', photoFile)
+      }
+    }
+
+    await api.post('/api/client/tickets', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     })
+    
     globalMsg.value = '¡Tu ticket ha sido creado con éxito! Le daremos seguimiento a la brevedad.'
     globalMsgType.value = 'success'
     createTicketDialog.value = false
@@ -608,12 +707,14 @@ const viewTicketDetails = async (ticket) => {
   selectedTicket.value = ticket
   detailsDialog.value = true
   ticketMessages.value = []
+  ticketAttachments.value = []
   replyText.value = ''
   
   try {
     const response = await api.get(`/api/client/tickets/${ticket.TicketID}`)
     selectedTicket.value = response.data.ticket
     ticketMessages.value = response.data.messages
+    ticketAttachments.value = response.data.attachments || []
   } catch (error) {
     console.error('Error al cargar el detalle del ticket:', error)
   }
@@ -649,6 +750,11 @@ const logout = () => {
 
 // Inicialización
 onMounted(() => {
+  const savedTheme = localStorage.getItem('portal_theme')
+  if (savedTheme) {
+    theme.global.name.value = savedTheme
+  }
+
   const rawUser = localStorage.getItem('clientUser')
   const token = localStorage.getItem('clientToken')
   
@@ -659,9 +765,12 @@ onMounted(() => {
 
   if (rawUser) {
     try {
-      const user = JSON.parse(rawUser)
-      clientName.value = user.name || 'Cliente'
-      clientEmail.value = user.email || ''
+      const parsedUser = JSON.parse(rawUser)
+      user.value = parsedUser
+      clientName.value = parsedUser.name || parsedUser.FullName || 'Cliente'
+      clientEmail.value = parsedUser.email || parsedUser.Email || ''
+      clientPhone.value = parsedUser.phone || parsedUser.Phone || ''
+      clientAddress.value = parsedUser.address || parsedUser.Address || ''
     } catch (e) {
       console.error(e)
     }

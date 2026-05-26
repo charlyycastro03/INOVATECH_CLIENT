@@ -215,76 +215,54 @@
                 <!-- Switch para activar Placa de Activo -->
                 <v-switch
                   v-model="enableAssetPlate"
-                  label="Habilitar Detalles de Equipo / Placa de Activo"
+                  label="Agregar Placa de Activo (Opcional)"
                   color="primary"
                   class="mb-2"
                   hide-details
                 ></v-switch>
 
-                <!-- Panel Colapsable de Activos -->
-                <v-expansion-panels v-if="enableAssetPlate" class="mb-4 glass-expansion" variant="accordion">
-                  <v-expansion-panel :bg-color="isDarkTheme ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'">
-                    <v-expansion-panel-title class="font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
-                      <v-icon left class="mr-2" color="primary">mdi-laptop</v-icon>
-                      Detalles del Equipo / Activo (Opcional)
-                    </v-expansion-panel-title>
-                    <v-expansion-panel-text>
-                      <v-row class="pt-2">
-                        <v-col cols="12" sm="4">
-                          <v-text-field
-                            v-model="newTicket.model"
-                            label="Marca y Modelo"
-                            placeholder="Ej: Dell Latitude"
-                            variant="solo-filled"
-                            :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
-                            :disabled="formLoading"
-                            class="custom-input mb-0"
-                            hide-details
-                          ></v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="4">
-                          <v-text-field
-                            v-model="newTicket.serialNumber"
-                            label="Número de Serie"
-                            placeholder="Ej: SN-987654"
-                            variant="solo-filled"
-                            :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
-                            :disabled="formLoading"
-                            class="custom-input mb-0"
-                            hide-details
-                          ></v-text-field>
-                        </v-col>
-                        <v-col cols="12" sm="4">
-                          <v-text-field
-                            v-model="newTicket.assetNumber"
-                            label="Placa de Activo"
-                            placeholder="Ej: INV-00123"
-                            variant="solo-filled"
-                            :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
-                            :disabled="formLoading"
-                            class="custom-input mb-0"
-                            hide-details
-                          ></v-text-field>
-                        </v-col>
-                      </v-row>
-                    </v-expansion-panel-text>
-                  </v-expansion-panel>
-                </v-expansion-panels>
+                <v-expand-transition>
+                  <div v-if="enableAssetPlate" class="mb-4">
+                    <v-text-field
+                      v-model="newTicket.assetNumber"
+                      label="Número de Placa de Activo"
+                      placeholder="Ej: INV-00123"
+                      variant="solo-filled"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                      :disabled="formLoading"
+                      class="custom-input mb-0"
+                      prepend-inner-icon="mdi-barcode-scan"
+                      hide-details
+                    ></v-text-field>
+                  </div>
+                </v-expand-transition>
 
-                <!-- Adjuntos -->
-                <v-file-input
-                  v-model="newTicket.photo"
-                  label="Adjuntar Evidencia (Foto/Video)"
-                  placeholder="Selecciona un archivo"
-                  prepend-icon="mdi-camera"
-                  variant="solo-filled"
-                  :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
-                  accept="image/*,video/*"
-                  :disabled="formLoading"
-                  class="custom-input mb-4"
-                  show-size
-                  clearable
-                ></v-file-input>
+                <!-- Adjuntos: Drag and Drop -->
+                <div 
+                  class="file-dropzone mb-4 rounded-lg d-flex flex-column align-center justify-center pa-6"
+                  :class="[isDarkTheme ? 'border-grey-darken-3 bg-grey-darken-4' : 'border-grey-lighten-2 bg-grey-lighten-4', isDragging ? 'dropzone-active' : '']"
+                  @dragover.prevent="isDragging = true"
+                  @dragleave.prevent="isDragging = false"
+                  @drop.prevent="handleDrop"
+                  @click="fileInput.click()"
+                  style="border: 2px dashed; cursor: pointer; transition: all 0.3s ease;"
+                >
+                  <input 
+                    type="file" 
+                    ref="fileInput" 
+                    class="d-none" 
+                    accept="image/*,video/*" 
+                    @change="handleFileSelect" 
+                  />
+                  <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-cloud-upload-outline</v-icon>
+                  <div class="text-body-1 text-center font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
+                    {{ newTicket.photo ? (newTicket.photo.name || 'Archivo seleccionado') : 'Arrastra tu evidencia aquí o haz clic para explorar' }}
+                  </div>
+                  <div class="text-caption text-grey-lighten-1 mt-1">Imágenes y videos permitidos</div>
+                  <v-btn v-if="newTicket.photo" variant="text" color="error" size="small" class="mt-2" @click.stop="clearFile">
+                    Quitar archivo
+                  </v-btn>
+                </div>
 
                 <v-textarea
                   v-model="newTicket.description"
@@ -542,6 +520,31 @@ const typeOptions = ref([
   { title: 'Problema', value: 'Problem' },
   { title: 'Cambio', value: 'Change' }
 ])
+
+const isDragging = ref(false)
+const fileInput = ref(null)
+
+const handleDrop = (e) => {
+  isDragging.value = false
+  const files = e.dataTransfer.files
+  if (files.length > 0) {
+    newTicket.value.photo = files[0]
+  }
+}
+
+const handleFileSelect = (e) => {
+  const files = e.target.files
+  if (files.length > 0) {
+    newTicket.value.photo = files[0]
+  }
+}
+
+const clearFile = () => {
+  newTicket.value.photo = null
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
 const newTicket = ref({
   title: '',
   category: null,
@@ -792,6 +795,11 @@ onMounted(() => {
   background-image: radial-gradient(circle at top right, rgba(30, 58, 138, 0.5) 0%, transparent 50%),
                     radial-gradient(circle at bottom left, rgba(15, 23, 42, 0.8) 0%, transparent 50%);
   min-height: 100vh;
+}
+
+.dropzone-active {
+  border-color: #2196f3 !important;
+  background-color: rgba(33, 150, 243, 0.1) !important;
 }
 
 .glass-navbar {

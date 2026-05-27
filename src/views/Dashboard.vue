@@ -82,31 +82,99 @@
         <v-row>
           <v-col cols="12">
             <v-card class="glass-card rounded-xl pa-2">
-              <v-card-title class="text-h6 font-weight-bold px-4 pt-4" :class="isDarkTheme ? 'text-white' : 'text-black'">Historial de Casos</v-card-title>
-              <v-data-table
-                :headers="headers"
-                :items="tickets"
-                :loading="loading"
-                loading-text="Cargando tus tickets..."
-                no-data-text="No tienes ningún ticket de soporte registrado aún."
-                class="bg-transparent custom-table"
-                :theme="isDarkTheme ? 'dark' : 'light'"
-              >
-                <template v-slot:item.TrackingID="{ item }">
-                  <span class="font-weight-bold text-primary">{{ item.TrackingID }}</span>
-                </template>
-                <template v-slot:item.Status="{ item }">
-                  <v-chip :color="getStatusColor(item.Status)" size="small" class="font-weight-bold text-uppercase px-3" variant="flat">
-                    {{ translateStatus(item.Status) }}
-                  </v-chip>
-                </template>
-                <template v-slot:item.CreatedAt="{ item }">
-                  <span>{{ formatDate(item.CreatedAt) }}</span>
-                </template>
-                <template v-slot:item.actions="{ item }">
-                  <v-btn icon="mdi-eye-outline" variant="text" color="primary" @click="viewTicketDetails(item)" title="Ver Detalles"></v-btn>
-                </template>
-              </v-data-table>
+              <v-tabs v-model="activeTab" color="primary" align-tabs="start" class="px-4 pt-2">
+                <v-tab value="my_tickets" class="text-subtitle-2 font-weight-bold">Mis Tickets</v-tab>
+                <v-tab value="all_tickets" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Todos los Tickets</v-tab>
+                <v-tab value="users" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Usuarios</v-tab>
+              </v-tabs>
+              
+              <v-divider class="mb-4"></v-divider>
+
+              <v-window v-model="activeTab">
+                <v-window-item value="my_tickets">
+                  <v-data-table
+                    :headers="headers"
+                    :items="tickets"
+                    :loading="loading"
+                    loading-text="Cargando tus tickets..."
+                    no-data-text="No tienes ningún ticket de soporte registrado aún."
+                    class="bg-transparent custom-table"
+                    :theme="isDarkTheme ? 'dark' : 'light'"
+                  >
+                    <template v-slot:item.TrackingID="{ item }">
+                      <span class="font-weight-bold text-primary">{{ item.TrackingID }}</span>
+                    </template>
+                    <template v-slot:item.Status="{ item }">
+                      <v-chip :color="getStatusColor(item.Status)" size="small" class="font-weight-bold text-uppercase px-3" variant="flat">
+                        {{ translateStatus(item.Status) }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item.CreatedAt="{ item }">
+                      <span>{{ formatDate(item.CreatedAt) }}</span>
+                    </template>
+                    <template v-slot:item.actions="{ item }">
+                      <v-btn icon="mdi-eye-outline" variant="text" color="primary" @click="viewTicketDetails(item)" title="Ver Detalles"></v-btn>
+                    </template>
+                  </v-data-table>
+                </v-window-item>
+
+                <v-window-item value="all_tickets" v-if="isAdminOrInovatech">
+                  <v-data-table
+                    :headers="headersAllTickets"
+                    :items="allTickets"
+                    :loading="loadingAllTickets"
+                    loading-text="Cargando todos los tickets..."
+                    no-data-text="No hay tickets en el sistema."
+                    class="bg-transparent custom-table"
+                    :theme="isDarkTheme ? 'dark' : 'light'"
+                  >
+                    <template v-slot:item.TrackingID="{ item }">
+                      <span class="font-weight-bold text-primary">{{ item.TrackingID }}</span>
+                    </template>
+                    <template v-slot:item.Status="{ item }">
+                      <v-chip :color="getStatusColor(item.Status)" size="small" class="font-weight-bold text-uppercase px-3" variant="flat">
+                        {{ translateStatus(item.Status) }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item.CreatedAt="{ item }">
+                      <span>{{ formatDate(item.CreatedAt) }}</span>
+                    </template>
+                    <template v-slot:item.actions="{ item }">
+                      <v-btn icon="mdi-eye-outline" variant="text" color="primary" @click="viewTicketDetails(item)" title="Ver Detalles"></v-btn>
+                    </template>
+                  </v-data-table>
+                </v-window-item>
+
+                <v-window-item value="users" v-if="isAdminOrInovatech">
+                  <div class="d-flex justify-end px-4 mb-2">
+                    <v-btn color="success" prepend-icon="mdi-account-plus" @click="openNewUserDialog" class="rounded-lg premium-btn">Nuevo Usuario</v-btn>
+                  </div>
+                  <v-data-table
+                    :headers="headersUsers"
+                    :items="companyUsers"
+                    :loading="loadingUsers"
+                    loading-text="Cargando usuarios..."
+                    no-data-text="No hay usuarios registrados."
+                    class="bg-transparent custom-table"
+                    :theme="isDarkTheme ? 'dark' : 'light'"
+                  >
+                    <template v-slot:item.RoleID="{ item }">
+                      <v-chip :color="item.RoleID === 1 ? 'error' : 'primary'" size="small" variant="flat">
+                        {{ item.RoleID === 1 ? 'Administrador' : 'Usuario' }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item.IsActive="{ item }">
+                      <v-chip :color="item.IsActive ? 'success' : 'grey'" size="small" variant="flat">
+                        {{ item.IsActive ? 'Activo' : 'Inactivo' }}
+                      </v-chip>
+                    </template>
+                    <template v-slot:item.actions="{ item }">
+                      <v-btn icon="mdi-pencil-outline" variant="text" color="info" size="small" @click="editUser(item)" title="Editar"></v-btn>
+                      <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="deleteUser(item)" title="Eliminar" v-if="item.IsActive"></v-btn>
+                    </template>
+                  </v-data-table>
+                </v-window-item>
+              </v-window>
             </v-card>
           </v-col>
         </v-row>
@@ -210,22 +278,54 @@
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6">
+                  <!-- On Behalf Of (Admins/Inovatech) -->
+                  <v-col cols="12" sm="12" v-if="isAdminOrInovatech">
+                    <v-autocomplete
+                      v-model="newTicket.onBehalfOf"
+                      :items="autocompleteUsers"
+                      item-title="FullName"
+                      item-value="UserID"
+                      label="Reportar en nombre de (Opcional)"
+                      placeholder="Busca por nombre o correo"
+                      variant="solo-filled"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                      :disabled="formLoading"
+                      class="custom-input mb-0"
+                      return-object
+                      clearable
+                      @update:modelValue="onBehalfOfSelected"
+                      hide-details
+                    >
+                      <template v-slot:item="{ props, item }">
+                        <v-list-item v-bind="props" :title="item.raw.FullName" :subtitle="item.raw.Email + ' - ' + (item.raw.Company || 'Sin Empresa')"></v-list-item>
+                      </template>
+                    </v-autocomplete>
+                  </v-col>
+
+                  <v-col cols="12" sm="4">
                     <v-text-field
-                      v-model="newTicket.model"
-                      label="Marca y Modelo (Opcional)"
-                      placeholder="Ej: Dell Latitude"
+                      v-model="newTicket.brand"
+                      label="Marca (Ej: Dell)"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6">
+                  <v-col cols="12" sm="4" v-if="newTicket.brand">
+                    <v-text-field
+                      v-model="newTicket.model"
+                      label="Modelo (Ej: Latitude)"
+                      variant="solo-filled"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="4" v-if="newTicket.model">
                     <v-text-field
                       v-model="newTicket.serialNumber"
-                      label="Número de Serie (Opcional)"
-                      placeholder="Ej: SN-987654"
+                      label="No. de Serie (Opcional)"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
@@ -261,29 +361,41 @@
 
                 <!-- Adjuntos: Drag and Drop -->
                 <div 
-                  class="file-dropzone mb-4 rounded-lg d-flex flex-column align-center justify-center pa-6"
+                  class="file-dropzone mb-4 rounded-lg d-flex flex-column align-center justify-center pa-6 position-relative"
                   :class="[isDarkTheme ? 'border-grey-darken-3 bg-grey-darken-4' : 'border-grey-lighten-2 bg-grey-lighten-4', isDragging ? 'dropzone-active' : '']"
                   @dragover.prevent="isDragging = true"
                   @dragleave.prevent="isDragging = false"
                   @drop.prevent="handleDrop"
-                  @click="fileInput.click()"
-                  style="border: 2px dashed; cursor: pointer; transition: all 0.3s ease;"
+                  @click="!newTicket.photo ? fileInput.click() : null"
+                  style="border: 2px dashed; cursor: pointer; transition: all 0.3s ease; min-height: 150px;"
                 >
                   <input 
                     type="file" 
                     ref="fileInput" 
                     class="d-none" 
-                    accept="image/*,video/*" 
+                    accept="image/*,video/*,application/pdf" 
                     @change="handleFileSelect" 
                   />
-                  <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-cloud-upload-outline</v-icon>
-                  <div class="text-body-1 text-center font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
-                    {{ newTicket.photo ? (newTicket.photo.name || 'Archivo seleccionado') : 'Arrastra tu evidencia aquí o haz clic para explorar' }}
-                  </div>
-                  <div class="text-caption text-grey-lighten-1 mt-1">Imágenes y videos permitidos</div>
-                  <v-btn v-if="newTicket.photo" variant="text" color="error" size="small" class="mt-2" @click.stop="clearFile">
-                    Quitar archivo
-                  </v-btn>
+                  
+                  <template v-if="!newTicket.photo">
+                    <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-cloud-upload-outline</v-icon>
+                    <div class="text-body-1 text-center font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
+                      Arrastra tu evidencia aquí o haz clic para explorar
+                    </div>
+                    <div class="text-caption text-grey-lighten-1 mt-1">Imágenes, videos y PDFs permitidos (Máx 5MB)</div>
+                  </template>
+                  
+                  <template v-else>
+                    <v-img v-if="previewUrl && newTicket.photo.type.startsWith('image/')" :src="previewUrl" height="100" class="rounded-lg mb-2" cover></v-img>
+                    <v-icon v-else size="48" color="primary" class="mb-2">mdi-file-document</v-icon>
+                    <div class="text-body-2 font-weight-bold text-center w-100 text-truncate" :class="isDarkTheme ? 'text-white' : 'text-black'" style="max-width: 200px;">{{ newTicket.photo.name }}</div>
+                    
+                    <v-btn icon="mdi-close" color="error" size="small" class="position-absolute" style="top: 10px; right: 10px; z-index: 5;" @click.stop="clearFile"></v-btn>
+                    
+                    <v-overlay v-model="uploadingFile" contained class="align-center justify-center rounded-lg">
+                      <v-progress-circular indeterminate color="primary" size="40"></v-progress-circular>
+                    </v-overlay>
+                  </template>
                 </div>
 
                 <v-textarea
@@ -476,6 +588,86 @@
           </v-card>
         </v-dialog>
       </v-container>
+
+      <!-- Diálogo de Gestión de Usuario -->
+      <v-dialog v-model="userDialog" max-width="500px" persistent>
+        <v-card class="glass-modal rounded-xl pa-4">
+          <v-card-title class="d-flex justify-space-between align-center px-4">
+            <span class="text-h5 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
+              {{ isEditingUser ? 'Editar Usuario' : 'Nuevo Usuario' }}
+            </span>
+            <v-btn icon="mdi-close" :color="isDarkTheme ? 'white' : 'black'" variant="text" @click="userDialog = false" :disabled="userLoading"></v-btn>
+          </v-card-title>
+          
+          <v-card-text class="pt-4">
+            <v-form ref="userForm" v-model="isUserFormValid">
+              <v-text-field
+                v-model="userFormData.FullName"
+                label="Nombre Completo"
+                variant="solo-filled"
+                :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                :rules="[v => !!v || 'El nombre es obligatorio']"
+                :disabled="userLoading"
+                class="custom-input mb-3"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="userFormData.Email"
+                label="Correo Electrónico"
+                type="email"
+                variant="solo-filled"
+                :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                :rules="[
+                  v => !!v || 'El correo es obligatorio',
+                  v => /.+@.+\..+/.test(v) || 'Correo no válido'
+                ]"
+                :disabled="userLoading || isEditingUser"
+                class="custom-input mb-3"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="userFormData.Phone"
+                label="Teléfono"
+                variant="solo-filled"
+                :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                :disabled="userLoading"
+                class="custom-input mb-3"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="userFormData.Company"
+                label="Empresa"
+                variant="solo-filled"
+                :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                :disabled="userLoading"
+                class="custom-input mb-3"
+              ></v-text-field>
+
+              <v-select
+                v-model="userFormData.RoleID"
+                :items="[{ title: 'Administrador', value: 1 }, { title: 'Usuario Estandar', value: 3 }]"
+                item-title="title"
+                item-value="value"
+                label="Rol de Sistema"
+                variant="solo-filled"
+                :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                :disabled="userLoading"
+                class="custom-input mb-3"
+              ></v-select>
+            </v-form>
+          </v-card-text>
+          
+          <v-card-actions class="px-6 pb-6 pt-0 justify-end">
+            <v-btn color="grey" variant="text" @click="userDialog = false" :disabled="userLoading" class="font-weight-bold px-4">
+              Cancelar
+            </v-btn>
+            <v-btn color="primary" variant="elevated" @click="saveUser" :loading="userLoading" :disabled="!isUserFormValid" class="premium-btn px-6 font-weight-bold">
+              Guardar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
     </v-main>
   </div>
 </template>
@@ -525,6 +717,42 @@ const globalMsgType = ref('success')
 const openTickets = computed(() => tickets.value.filter(t => t.Status === 'Open' || t.Status === 'In Progress').length)
 const closedTickets = computed(() => tickets.value.filter(t => t.Status === 'Closed' || t.Status === 'Resolved').length)
 
+const activeTab = ref('my_tickets')
+
+const isAdminOrInovatech = computed(() => {
+  if (!user.value) return false;
+  const email = user.value.email || user.value.Email || '';
+  const role = user.value.role || user.value.RoleID || '';
+  return email.endsWith('@inovatech.com.mx') || email === 'charlyycastro03@inovatech.com.mx' || role === 'ADMIN' || role === 1;
+})
+
+const allTickets = ref([])
+const loadingAllTickets = ref(false)
+const headersAllTickets = [
+  { title: 'Folio', align: 'start', key: 'TrackingID' },
+  { title: 'Asunto / Título', key: 'Subject' },
+  { title: 'Creado Por', key: 'ReportedByName' },
+  { title: 'Empresa', key: 'CompanyName' },
+  { title: 'Fecha', key: 'CreatedAt' },
+  { title: 'Estado', key: 'Status', align: 'center' },
+  { title: 'Detalles', key: 'actions', sortable: false, align: 'center' },
+]
+
+const companyUsers = ref([])
+const loadingUsers = ref(false)
+const headersUsers = [
+  { title: 'Nombre', key: 'FullName' },
+  { title: 'Correo', key: 'Email' },
+  { title: 'Empresa', key: 'Company' },
+  { title: 'Rol', key: 'RoleID', align: 'center' },
+  { title: 'Estado', key: 'IsActive', align: 'center' },
+  { title: 'Acciones', key: 'actions', sortable: false, align: 'center' },
+]
+
+const autocompleteUsers = ref([])
+const previewUrl = ref(null)
+const uploadingFile = ref(false)
+
 // Diálogo de Creación
 const createTicketDialog = ref(false)
 const isFormValid = ref(false)
@@ -549,24 +777,53 @@ const fileInput = ref(null)
 const handleDrop = (e) => {
   isDragging.value = false
   const files = e.dataTransfer.files
-  if (files.length > 0) {
-    newTicket.value.photo = files[0]
-  }
+  handleFileSelection(files)
 }
 
 const handleFileSelect = (e) => {
   const files = e.target.files
+  handleFileSelection(files)
+}
+
+const handleFileSelection = (files) => {
   if (files.length > 0) {
-    newTicket.value.photo = files[0]
+    const file = files[0]
+    if (file.size > 5 * 1024 * 1024) {
+      globalMsg.value = 'El archivo es demasiado grande. El máximo permitido es 5MB.'
+      globalMsgType.value = 'error'
+      return
+    }
+    newTicket.value.photo = file
+    if (file.type.startsWith('image/')) {
+      previewUrl.value = URL.createObjectURL(file)
+    } else {
+      previewUrl.value = null
+    }
   }
 }
 
 const clearFile = () => {
   newTicket.value.photo = null
+  previewUrl.value = null
   if (fileInput.value) {
     fileInput.value.value = ''
   }
 }
+
+const onBehalfOfSelected = (selectedUser) => {
+  if (selectedUser) {
+    newTicket.value.reportedByEmail = selectedUser.Email;
+    newTicket.value.reportedByName = selectedUser.FullName;
+    newTicket.value.reportedByCompany = selectedUser.Company;
+    newTicket.value.contactPhone = selectedUser.Phone || '';
+    newTicket.value.contactAddress = selectedUser.Address || '';
+  } else {
+    newTicket.value.reportedByEmail = null;
+    newTicket.value.reportedByName = null;
+    newTicket.value.reportedByCompany = null;
+  }
+}
+
 const newTicket = ref({
   title: '',
   category: null,
@@ -576,11 +833,16 @@ const newTicket = ref({
   contactPhone: '',
   contactAddress: '',
   location: '',
-  serialNumber: '',
+  brand: '',
   model: '',
+  serialNumber: '',
   assetNumber: '',
   impactLevel: 'Low',
-  photo: null
+  photo: null,
+  onBehalfOf: null,
+  reportedByEmail: null,
+  reportedByName: null,
+  reportedByCompany: null
 })
 
 const enableAssetPlate = ref(false)
@@ -668,13 +930,19 @@ const openNewTicketDialog = () => {
     contactPhone: clientPhone.value || '',
     contactAddress: clientAddress.value || '',
     location: '',
-    serialNumber: '',
+    brand: '',
     model: '',
+    serialNumber: '',
     assetNumber: '',
     impactLevel: 'Low',
-    photo: null
+    photo: null,
+    onBehalfOf: null,
+    reportedByEmail: null,
+    reportedByName: null,
+    reportedByCompany: null
   }
   enableAssetPlate.value = false
+  previewUrl.value = null
   createTicketDialog.value = true
   if (ticketForm.value) ticketForm.value.resetValidation()
 }
@@ -695,8 +963,15 @@ const submitTicket = async () => {
     formData.append('location', newTicket.value.location)
     formData.append('impactLevel', newTicket.value.impactLevel)
 
+    if (newTicket.value.brand) formData.append('brand', newTicket.value.brand)
     if (newTicket.value.model) formData.append('model', newTicket.value.model)
     if (newTicket.value.serialNumber) formData.append('serialNumber', newTicket.value.serialNumber)
+    
+    if (newTicket.value.reportedByEmail) {
+      formData.append('reportedByEmail', newTicket.value.reportedByEmail)
+      formData.append('reportedByName', newTicket.value.reportedByName)
+      formData.append('reportedByCompany', newTicket.value.reportedByCompany || '')
+    }
 
     if (enableAssetPlate.value && newTicket.value.assetNumber) {
       formData.append('assetNumber', newTicket.value.assetNumber)
@@ -710,6 +985,7 @@ const submitTicket = async () => {
       }
     }
 
+    uploadingFile.value = true;
     await api.post('/api/client/tickets', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
@@ -724,6 +1000,126 @@ const submitTicket = async () => {
     globalMsgType.value = 'error'
   } finally {
     formLoading.value = false
+    uploadingFile.value = false
+    if (activeTab.value === 'all_tickets') fetchAllTickets()
+  }
+}
+
+const fetchAllTickets = async () => {
+  if (!isAdminOrInovatech.value) return;
+  loadingAllTickets.value = true
+  try {
+    const response = await api.get('/api/client/all-tickets')
+    allTickets.value = response.data
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loadingAllTickets.value = false
+  }
+}
+
+const fetchCompanyUsers = async () => {
+  if (!isAdminOrInovatech.value) return;
+  loadingUsers.value = true
+  try {
+    const response = await api.get('/api/client/users')
+    companyUsers.value = response.data
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loadingUsers.value = false
+  }
+}
+
+const fetchAutocompleteUsers = async () => {
+  if (!isAdminOrInovatech.value) return;
+  try {
+    const response = await api.get('/api/client/autocomplete-users')
+    autocompleteUsers.value = response.data
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+// User Management Methods
+const userDialog = ref(false)
+const isEditingUser = ref(false)
+const isUserFormValid = ref(false)
+const userLoading = ref(false)
+const userForm = ref(null)
+const selectedUserId = ref(null)
+
+const userFormData = ref({
+  FullName: '',
+  Email: '',
+  Phone: '',
+  Company: '',
+  RoleID: 3
+})
+
+const openNewUserDialog = () => {
+  isEditingUser.value = false
+  selectedUserId.value = null
+  userFormData.value = {
+    FullName: '',
+    Email: '',
+    Phone: '',
+    Company: '',
+    RoleID: 3
+  }
+  userDialog.value = true
+  if (userForm.value) userForm.value.resetValidation()
+}
+
+const editUser = (userItem) => {
+  isEditingUser.value = true
+  selectedUserId.value = userItem.UserID
+  userFormData.value = {
+    FullName: userItem.FullName,
+    Email: userItem.Email,
+    Phone: userItem.Phone || '',
+    Company: userItem.Company || '',
+    RoleID: userItem.RoleID
+  }
+  userDialog.value = true
+  if (userForm.value) userForm.value.resetValidation()
+}
+
+const saveUser = async () => {
+  userLoading.value = true
+  try {
+    if (isEditingUser.value) {
+      await api.put(`/api/client/users/${selectedUserId.value}`, userFormData.value)
+      globalMsg.value = 'Usuario actualizado correctamente.'
+    } else {
+      await api.post('/api/client/users', userFormData.value)
+      globalMsg.value = 'Usuario creado correctamente.'
+    }
+    globalMsgType.value = 'success'
+    userDialog.value = false
+    fetchCompanyUsers()
+    fetchAutocompleteUsers()
+  } catch (error) {
+    console.error('Error saving user:', error)
+    globalMsg.value = error.response?.data?.message || 'Error al guardar el usuario.'
+    globalMsgType.value = 'error'
+  } finally {
+    userLoading.value = false
+  }
+}
+
+const deleteUser = async (userItem) => {
+  if (!confirm(`¿Estás seguro de que deseas desactivar al usuario ${userItem.FullName}?`)) return
+  try {
+    await api.delete(`/api/client/users/${userItem.UserID}`)
+    globalMsg.value = 'Usuario desactivado correctamente.'
+    globalMsgType.value = 'success'
+    fetchCompanyUsers()
+    fetchAutocompleteUsers()
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    globalMsg.value = 'Error al desactivar el usuario.'
+    globalMsgType.value = 'error'
   }
 }
 
@@ -803,6 +1199,12 @@ onMounted(() => {
   
   fetchCategories()
   fetchTickets()
+  
+  if (isAdminOrInovatech.value) {
+    fetchAllTickets()
+    fetchCompanyUsers()
+    fetchAutocompleteUsers()
+  }
 })
 </script>
 

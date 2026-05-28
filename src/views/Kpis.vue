@@ -130,6 +130,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTheme } from 'vuetify'
 import api from '../plugins/axios'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
 import { Bar, Doughnut } from 'vue-chartjs'
@@ -137,7 +138,9 @@ import { Bar, Doughnut } from 'vue-chartjs'
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
 
 const router = useRouter()
-const isDarkTheme = ref(localStorage.getItem('theme') === 'dark')
+const theme = useTheme()
+
+const isDarkTheme = computed(() => theme.global.name.value === 'dark')
 
 const loading = ref(true)
 const reportLoading = ref(false)
@@ -207,15 +210,15 @@ const engineerData = computed(() => {
   }
 })
 
-const pieOptions = {
+const pieOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: { position: 'right', labels: { color: isDarkTheme.value ? '#fff' : '#333' } }
   }
-}
+}))
 
-const barOptions = {
+const barOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -225,11 +228,11 @@ const barOptions = {
   plugins: {
     legend: { display: false }
   }
-}
+}))
 
 const toggleTheme = () => {
-  isDarkTheme.value = !isDarkTheme.value
-  localStorage.setItem('theme', isDarkTheme.value ? 'dark' : 'light')
+  theme.global.name.value = isDarkTheme.value ? 'light' : 'dark'
+  localStorage.setItem('portal_theme', theme.global.name.value)
 }
 
 const fetchEngineers = async () => {
@@ -256,15 +259,12 @@ const fetchKpis = async () => {
 const downloadReport = async () => {
   reportLoading.value = true
   try {
-    const query = new URLSearchParams(filters.value).toString()
-    const token = localStorage.getItem('token')
-    const response = await fetch(`http://localhost:5000/api/helpdesk/kpis/report?${query}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+    const response = await api.get('/api/helpdesk/kpis/report', {
+      params: filters.value,
+      responseType: 'blob'
     })
     
-    if (!response.ok) throw new Error('Error al generar reporte')
-      
-    const blob = await response.blob()
+    const blob = response.data
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -282,8 +282,31 @@ const downloadReport = async () => {
 }
 
 onMounted(() => {
-  const token = localStorage.getItem('token')
-  if (!token) {
+  const savedTheme = localStorage.getItem('portal_theme')
+  if (savedTheme) {
+    theme.global.name.value = savedTheme
+  }
+
+  const token = localStorage.getItem('clientToken')
+  const rawUser = localStorage.getItem('clientUser')
+  
+  if (!token || !rawUser) {
+    router.push('/login')
+    return
+  }
+
+  try {
+    const parsedUser = JSON.parse(rawUser)
+    const email = parsedUser.email || parsedUser.Email || ''
+    const role = parsedUser.role || parsedUser.RoleID || ''
+    const isAdminOrInovatech = email.endsWith('@inovatech.com.mx') || email === 'charlyycastro03@inovatech.com.mx' || role === 'ADMIN' || role === 1
+
+    if (!isAdminOrInovatech) {
+      router.push('/dashboard')
+      return
+    }
+  } catch (err) {
+    console.error(err)
     router.push('/login')
     return
   }

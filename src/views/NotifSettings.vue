@@ -61,12 +61,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTheme } from 'vuetify'
 import api from '../plugins/axios'
 
 const router = useRouter()
-const isDarkTheme = ref(localStorage.getItem('theme') === 'dark')
+const theme = useTheme()
+
+const isDarkTheme = computed(() => theme.global.name.value === 'dark')
 const settings = ref([])
 const loading = ref(true)
 const updating = ref(null)
@@ -75,8 +78,8 @@ const snackbarText = ref('')
 const snackbarColor = ref('success')
 
 const toggleTheme = () => {
-  isDarkTheme.value = !isDarkTheme.value
-  localStorage.setItem('theme', isDarkTheme.value ? 'dark' : 'light')
+  theme.global.name.value = isDarkTheme.value ? 'light' : 'dark'
+  localStorage.setItem('portal_theme', theme.global.name.value)
 }
 
 const showSnackbar = (text, color = 'success') => {
@@ -119,16 +122,26 @@ const updateSetting = async (setting) => {
 }
 
 onMounted(() => {
-  const token = localStorage.getItem('token')
-  if (!token) {
+  const savedTheme = localStorage.getItem('portal_theme')
+  if (savedTheme) {
+    theme.global.name.value = savedTheme
+  }
+
+  const token = localStorage.getItem('clientToken')
+  const rawUser = localStorage.getItem('clientUser')
+  
+  if (!token || !rawUser) {
     router.push('/login')
     return
   }
   
   try {
-    const userPayload = JSON.parse(atob(token.split('.')[1]))
-    // Solo admins (RoleID = 1) pueden ver esto, o 4 para testing
-    if (userPayload.role !== 1 && userPayload.role !== 4) {
+    const parsedUser = JSON.parse(rawUser)
+    const email = parsedUser.email || parsedUser.Email || ''
+    const role = parsedUser.role || parsedUser.RoleID || ''
+    const isAdminOrInovatech = email.endsWith('@inovatech.com.mx') || email === 'charlyycastro03@inovatech.com.mx' || role === 'ADMIN' || role === 1
+
+    if (!isAdminOrInovatech) {
       router.push('/dashboard')
     } else {
       fetchSettings()

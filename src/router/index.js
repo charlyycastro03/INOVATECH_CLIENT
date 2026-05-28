@@ -43,4 +43,36 @@ const router = createRouter({
   routes
 })
 
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('clientToken')
+  const rawUser = localStorage.getItem('clientUser')
+
+  // Paths that require authentication
+  const authRequiredRoutes = ['/dashboard', '/helpdesk/kpis', '/helpdesk/settings/notifications']
+  const adminOnlyRoutes = ['/helpdesk/kpis', '/helpdesk/settings/notifications']
+
+  if (authRequiredRoutes.includes(to.path)) {
+    if (!token || !rawUser) {
+      return next('/login')
+    }
+
+    if (adminOnlyRoutes.includes(to.path)) {
+      try {
+        const parsedUser = JSON.parse(rawUser)
+        const email = parsedUser.email || parsedUser.Email || ''
+        const role = parsedUser.role || parsedUser.RoleID || ''
+        const isAdminOrInovatech = email.endsWith('@inovatech.com.mx') || email === 'charlyycastro03@inovatech.com.mx' || role === 'ADMIN' || role === 1
+
+        if (!isAdminOrInovatech) {
+          return next('/dashboard')
+        }
+      } catch (e) {
+        return next('/login')
+      }
+    }
+  }
+
+  next()
+})
+
 export default router

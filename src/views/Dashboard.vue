@@ -1596,7 +1596,7 @@ onMounted(() => {
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1) !important;
 }
 
-.bg-dark .glass-modal {
+.glass-modal.bg-dark {
   background: rgba(30, 30, 30, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }

@@ -332,11 +332,7 @@
                       clearable
                       @update:modelValue="onBehalfOfSelected"
                       hide-details
-                    >
-                      <template v-slot:item="{ props, item }">
-                        <v-list-item v-bind="props" :title="item.raw.FullName" :subtitle="item.raw.Email + ' - ' + (item.raw.Company || 'Sin Empresa')"></v-list-item>
-                      </template>
-                    </v-autocomplete>
+                    ></v-autocomplete>
                   </v-col>
 
                   <v-col cols="12" sm="4">
@@ -1008,10 +1004,12 @@ const headersUsers = [
 
 const autocompleteUsers = ref([])
 const filterUser = (itemTitle, queryText, item) => {
-  const name = item.raw.FullName ? item.raw.FullName.toLowerCase() : ''
-  const email = item.raw.Email ? item.raw.Email.toLowerCase() : ''
-  const company = item.raw.Company ? item.raw.Company.toLowerCase() : ''
+  if (!queryText) return true
   const q = queryText.toLowerCase()
+  const rawItem = item && item.raw ? item.raw : (item || {})
+  const name = (rawItem.FullName || itemTitle || '').toLowerCase()
+  const email = (rawItem.Email || '').toLowerCase()
+  const company = (rawItem.Company || '').toLowerCase()
   return name.includes(q) || email.includes(q) || company.includes(q)
 }
 const previewUrl = ref(null)

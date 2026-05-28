@@ -397,42 +397,73 @@
                 </v-expand-transition>
 
                 <!-- Adjuntos: Drag and Drop -->
+                <!-- Adjuntos: Drag and Drop -->
                 <div 
                   class="file-dropzone mb-4 rounded-lg d-flex flex-column align-center justify-center pa-6 position-relative"
                   :class="[isDarkTheme ? 'border-grey-darken-3 bg-grey-darken-4' : 'border-grey-lighten-2 bg-grey-lighten-4', isDragging ? 'dropzone-active' : '']"
                   @dragover.prevent="isDragging = true"
                   @dragleave.prevent="isDragging = false"
                   @drop.prevent="handleDrop"
-                  @click="!newTicket.photo ? fileInput.click() : null"
+                  @click="fileInput.click()"
                   style="border: 2px dashed; cursor: pointer; transition: all 0.3s ease; min-height: 150px;"
                 >
                   <input 
                     type="file" 
                     ref="fileInput" 
                     class="d-none" 
+                    multiple
                     accept="image/*,video/*,application/pdf" 
                     @change="handleFileSelect" 
                   />
                   
-                  <template v-if="!newTicket.photo">
-                    <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-cloud-upload-outline</v-icon>
-                    <div class="text-body-1 text-center font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
-                      Arrastra tu evidencia aquí o haz clic para explorar
-                    </div>
-                    <div class="text-caption text-grey-lighten-1 mt-1">Formatos: PNG, JPG, PDF, DOCX | Tamaño máximo: 5 MB</div>
-                  </template>
+                  <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-cloud-upload-outline</v-icon>
+                  <div class="text-body-1 text-center font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
+                    Arrastra tu evidencia aquí o haz clic para explorar
+                  </div>
+                  <div class="text-caption text-grey-lighten-1 mt-1">Formatos: PNG, JPG, PDF, DOCX, Video | Máx 5 MB por archivo</div>
                   
-                  <template v-else>
-                    <v-img v-if="previewUrl && newTicket.photo.type.startsWith('image/')" :src="previewUrl" height="100" class="rounded-lg mb-2" cover></v-img>
-                    <v-icon v-else size="48" color="primary" class="mb-2">mdi-file-document</v-icon>
-                    <div class="text-body-2 font-weight-bold text-center w-100 text-truncate" :class="isDarkTheme ? 'text-white' : 'text-black'" style="max-width: 200px;">{{ newTicket.photo.name }}</div>
-                    
-                    <v-btn icon="mdi-close" color="error" size="small" class="position-absolute" style="top: 10px; right: 10px; z-index: 5;" @click.stop="clearFile"></v-btn>
-                    
-                    <v-overlay v-model="uploadingFile" contained class="align-center justify-center rounded-lg">
-                      <v-progress-circular indeterminate color="primary" size="40"></v-progress-circular>
-                    </v-overlay>
-                  </template>
+                  <v-overlay v-model="uploadingFile" contained class="align-center justify-center rounded-lg">
+                    <v-progress-circular indeterminate color="primary" size="40"></v-progress-circular>
+                  </v-overlay>
+                </div>
+
+                <!-- Listado de archivos cargados -->
+                <div v-if="newTicket.attachments && newTicket.attachments.length > 0" class="mb-4">
+                  <div class="text-subtitle-2 font-weight-bold mb-2" :class="isDarkTheme ? 'text-white' : 'text-black'">Archivos seleccionados:</div>
+                  <v-list class="bg-transparent pa-0">
+                    <v-list-item 
+                      v-for="item in newTicket.attachments" 
+                      :key="item.id"
+                      class="mb-2 rounded-lg border border-opacity-10"
+                      :class="[
+                        isDarkTheme ? 'bg-grey-darken-4 border-white' : 'bg-grey-lighten-4 border-black',
+                        item.error ? 'border-error border-opacity-100 bg-red-lighten-5' : ''
+                      ]"
+                      style="border-style: solid !important; border-width: 1px !important;"
+                    >
+                      <template v-slot:prepend>
+                        <v-avatar rounded="lg" size="48" class="mr-3 bg-surface" border>
+                          <v-img v-if="item.preview" :src="item.preview" cover></v-img>
+                          <v-icon v-else :color="item.error ? 'error' : 'primary'" size="28">
+                            {{ item.type.startsWith('video/') ? 'mdi-video' : 'mdi-file-document-outline' }}
+                          </v-icon>
+                        </v-avatar>
+                      </template>
+
+                      <v-list-item-title class="text-body-2 font-weight-bold w-100 text-truncate" :class="[item.error ? 'text-error font-weight-bold' : (isDarkTheme ? 'text-white' : 'text-black')]" style="max-width: 280px;">
+                        {{ item.name }}
+                      </v-list-item-title>
+                      
+                      <v-list-item-subtitle class="text-caption" :class="item.error ? 'text-error font-weight-bold' : 'text-grey-lighten-1'">
+                        <span v-if="item.error">⚠️ {{ item.errorMsg }}</span>
+                        <span v-else>{{ formatSize(item.size) }}</span>
+                      </v-list-item-subtitle>
+
+                      <template v-slot:append>
+                        <v-btn icon="mdi-delete-outline" color="error" variant="text" size="small" @click.stop="removeAttachment(item.id)"></v-btn>
+                      </template>
+                    </v-list-item>
+                  </v-list>
                 </div>
 
                 <v-textarea
@@ -1011,28 +1042,49 @@ const handleFileSelect = (e) => {
 }
 
 const handleFileSelection = (files) => {
-  if (files.length > 0) {
-    const file = files[0]
+  if (!files || files.length === 0) return
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    const fileItem = {
+      id: Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      file: file,
+      error: false,
+      errorMsg: '',
+      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+    }
+    
     if (file.size > 5 * 1024 * 1024) {
-      globalMsg.value = 'El archivo es demasiado grande. El máximo permitido es 5MB.'
-      globalMsgType.value = 'error'
-      return
+      fileItem.error = true
+      fileItem.errorMsg = 'El archivo es muy pesado (Máx 5MB)'
     }
-    newTicket.value.photo = file
-    if (file.type.startsWith('image/')) {
-      previewUrl.value = URL.createObjectURL(file)
-    } else {
-      previewUrl.value = null
+    
+    if (!newTicket.value.attachments) {
+      newTicket.value.attachments = []
     }
+    newTicket.value.attachments.push(fileItem)
   }
 }
 
-const clearFile = () => {
-  newTicket.value.photo = null
-  previewUrl.value = null
-  if (fileInput.value) {
-    fileInput.value.value = ''
+const removeAttachment = (id) => {
+  const index = newTicket.value.attachments.findIndex(item => item.id === id)
+  if (index !== -1) {
+    const item = newTicket.value.attachments[index]
+    if (item.preview) {
+      URL.revokeObjectURL(item.preview)
+    }
+    newTicket.value.attachments.splice(index, 1)
   }
+}
+
+const formatSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 const onBehalfOfSelected = (selectedUser) => {
@@ -1064,7 +1116,7 @@ const newTicket = ref({
   serialNumber: '',
   assetNumber: '',
   impactLevel: 'Low',
-  photo: null,
+  attachments: [],
   onBehalfOf: null,
   reportedByEmail: null,
   reportedByName: null,
@@ -1160,7 +1212,7 @@ const openNewTicketDialog = () => {
     serialNumber: '',
     assetNumber: '',
     impactLevel: 'Low',
-    photo: null,
+    attachments: [],
     onBehalfOf: null,
     reportedByEmail: null,
     reportedByName: null,
@@ -1203,12 +1255,12 @@ const submitTicket = async () => {
       formData.append('assetNumber', newTicket.value.assetNumber)
     }
 
-    if (newTicket.value.photo) {
-      // In Vuetify 3, file inputs often give an array. Check if it's an array.
-      const photoFile = Array.isArray(newTicket.value.photo) ? newTicket.value.photo[0] : newTicket.value.photo;
-      if (photoFile) {
-        formData.append('photo', photoFile)
-      }
+    if (newTicket.value.attachments && newTicket.value.attachments.length > 0) {
+      newTicket.value.attachments.forEach(fileItem => {
+        if (!fileItem.error) {
+          formData.append('photo', fileItem.file)
+        }
+      })
     }
 
     uploadingFile.value = true;

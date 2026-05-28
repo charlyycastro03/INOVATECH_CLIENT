@@ -130,7 +130,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../utils/api'
+import api from '../plugins/axios'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
 import { Bar, Doughnut } from 'vue-chartjs'
 

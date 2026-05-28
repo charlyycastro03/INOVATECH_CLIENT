@@ -63,7 +63,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../utils/api'
+import api from '../plugins/axios'
 
 const router = useRouter()
 const isDarkTheme = ref(localStorage.getItem('theme') === 'dark')

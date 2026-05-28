@@ -1353,7 +1353,6 @@ const deleteUser = async (userItem) => {
 }
 
 // Ver detalles e historial de conversación de un Ticket
-const replyLoading = ref(false)
 
 // Asignación Múltiple
 const ticketAssignees = ref([])
@@ -1547,7 +1546,9 @@ onMounted(() => {
 .bg-dark {
   background-color: #0a0a0a;
   position: relative;
-  background-image: radial-gradient(circle at top right, rgba(30, 58, 138, 0.5) 0%, transparent 50%),
+  background-image: radial-gradient(circle at top right, rgba(30, 58, 138, 0.5) 0%, transparent 50%);
+}
+
 .glass-navbar {
   background: rgba(255, 255, 255, 0.05) !important;
   backdrop-filter: blur(10px) !important;

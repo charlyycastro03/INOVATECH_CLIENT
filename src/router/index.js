@@ -14,8 +14,14 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../views/Dashboard.vue')
+  },
+  {
+    path: '/survey/:trackingId',
+    name: 'Survey',
+    component: () => import('../views/Survey.vue')
   }
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),

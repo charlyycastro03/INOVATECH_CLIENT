@@ -85,13 +85,13 @@
               <v-tabs v-model="activeTab" color="primary" align-tabs="start" class="px-4 pt-2">
                 <v-tab value="my_tickets" class="text-subtitle-2 font-weight-bold">Mis Tickets</v-tab>
                 <v-tab value="all_tickets" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Todos los Tickets</v-tab>
-                <v-tab value="users" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Usuarios</v-tab>
+                <v-tab value="users" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Usuarios Internos</v-tab>
               </v-tabs>
               
               <v-divider class="mb-2"></v-divider>
 
-              <!-- Buscador rápido -->
-              <div class="px-4 pb-3 pt-1">
+              <!-- Acciones Rápidas (Buscador y Export) -->
+              <div class="px-4 pb-3 pt-1 d-flex flex-wrap align-center gap-4">
                 <v-text-field
                   v-model="searchQuery"
                   prepend-inner-icon="mdi-magnify"
@@ -101,8 +101,20 @@
                   hide-details
                   clearable
                   :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'"
-                  class="rounded-lg"
+                  class="rounded-lg flex-grow-1"
+                  style="min-width: 250px;"
                 ></v-text-field>
+
+                <v-btn
+                  v-if="isAdminOrInovatech"
+                  color="success"
+                  prepend-icon="mdi-file-excel"
+                  variant="elevated"
+                  class="rounded-lg font-weight-bold premium-btn"
+                  @click="openExportDialog"
+                >
+                  Exportar a CSV
+                </v-btn>
               </div>
 
               <v-divider class="mb-4"></v-divider>
@@ -176,8 +188,8 @@
                     :theme="isDarkTheme ? 'dark' : 'light'"
                   >
                     <template v-slot:item.RoleID="{ item }">
-                      <v-chip :color="item.RoleID === 1 ? 'error' : 'primary'" size="small" variant="flat">
-                        {{ item.RoleID === 1 ? 'Administrador' : 'Usuario' }}
+                      <v-chip :color="item.RoleID === 1 ? 'error' : (item.RoleID === 4 ? 'info' : 'primary')" size="small" variant="flat">
+                        {{ { 1: 'Admin', 2: 'Caja', 4: 'Ingeniería', 5: 'Monitor' }[item.RoleID] || 'Staff' }}
                       </v-chip>
                     </template>
                     <template v-slot:item.IsActive="{ item }">
@@ -474,8 +486,29 @@
                 </v-col>
                 <v-col cols="12" sm="6" md="3" class="py-1">
                   <div class="text-caption text-grey-lighten-1">Atendido Por</div>
-                  <div class="font-weight-bold text-primary text-truncate">
-                    {{ selectedTicket.AssignedEngineerName || 'En Cola' }}
+                  <div class="d-flex flex-wrap gap-2 align-center mt-1">
+                    <v-chip
+                      v-for="eng in ticketAssignees"
+                      :key="eng.UserID"
+                      size="small"
+                      color="primary"
+                      variant="flat"
+                      :closable="isAdminOrInovatech"
+                      @click:close="removeAssignee(eng.UserID)"
+                    >
+                      {{ eng.FullName }}
+                    </v-chip>
+                    <span v-if="ticketAssignees.length === 0" class="text-caption text-grey">En Cola</span>
+                    <v-btn
+                      v-if="isAdminOrInovatech"
+                      icon="mdi-plus"
+                      size="x-small"
+                      variant="tonal"
+                      color="success"
+                      class="ml-1"
+                      @click="assignEngineerDialog = true"
+                      title="Asignar Ingeniero"
+                    ></v-btn>
                   </div>
                 </v-col>
                 <v-col cols="12" sm="6" md="3" class="py-1 mt-2" v-if="selectedTicket.Location">
@@ -590,15 +623,26 @@
                   :disabled="replyLoading"
                   class="mr-2 w-100 custom-input"
                 ></v-textarea>
-                <v-btn
-                  color="primary"
-                  icon="mdi-send"
-                  size="large"
-                  class="rounded-lg premium-btn"
-                  :loading="replyLoading"
-                  :disabled="!replyText.trim()"
-                  @click="submitReply"
-                ></v-btn>
+                <div class="d-flex flex-column gap-2">
+                  <v-btn
+                    v-if="isAdminOrInovatech"
+                    color="info"
+                    icon="mdi-text-box-multiple-outline"
+                    size="small"
+                    class="rounded-lg premium-btn"
+                    title="Respuestas Automáticas"
+                    @click="fetchCannedResponses"
+                  ></v-btn>
+                  <v-btn
+                    color="primary"
+                    icon="mdi-send"
+                    size="large"
+                    class="rounded-lg premium-btn"
+                    :loading="replyLoading"
+                    :disabled="!replyText.trim()"
+                    @click="submitReply"
+                  ></v-btn>
+                </div>
               </div>
             </v-card-actions>
             <v-card-actions class="pa-4 justify-center" :style="{ background: isDarkTheme ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }" v-else>
@@ -667,7 +711,7 @@
 
               <v-select
                 v-model="userFormData.RoleID"
-                :items="[{ title: 'Administrador', value: 1 }, { title: 'Usuario Estandar', value: 3 }]"
+                :items="[{ title: 'Admin', value: 1 }, { title: 'Ingeniería', value: 4 }, { title: 'Monitor', value: 5 }, { title: 'Caja', value: 2 }]"
                 item-title="title"
                 item-value="value"
                 label="Rol de Sistema"
@@ -687,6 +731,105 @@
               Guardar
             </v-btn>
           </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Diálogo para Exportar CSV -->
+      <v-dialog v-model="exportDialog" max-width="400px" persistent>
+        <v-card class="glass-modal rounded-xl pa-4">
+          <v-card-title class="d-flex justify-space-between align-center px-4">
+            <span class="text-h6 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
+              Exportar Tickets a CSV
+            </span>
+            <v-btn icon="mdi-close" :color="isDarkTheme ? 'white' : 'black'" variant="text" @click="exportDialog = false" :disabled="exportLoading"></v-btn>
+          </v-card-title>
+          
+          <v-card-text class="pt-4">
+            <p class="text-body-2 text-grey-lighten-1 mb-4">
+              Selecciona el rango de fechas de creación para exportar los tickets. Deja en blanco para exportar todos.
+            </p>
+            <v-text-field
+              v-model="exportDates.from"
+              label="Desde (Opcional)"
+              type="date"
+              variant="solo-filled"
+              :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+              class="custom-input mb-3"
+            ></v-text-field>
+
+            <v-text-field
+              v-model="exportDates.to"
+              label="Hasta (Opcional)"
+              type="date"
+              variant="solo-filled"
+              :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+              class="custom-input"
+            ></v-text-field>
+          </v-card-text>
+          
+          <v-card-actions class="px-6 pb-6 pt-0 justify-end">
+            <v-btn color="grey" variant="text" @click="exportDialog = false" :disabled="exportLoading" class="font-weight-bold px-4">
+              Cancelar
+            </v-btn>
+            <v-btn color="success" variant="elevated" @click="downloadCsv" :loading="exportLoading" prepend-icon="mdi-download" class="premium-btn px-6 font-weight-bold">
+              Descargar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Diálogo para Asignar Ingeniero -->
+      <v-dialog v-model="assignEngineerDialog" max-width="400px">
+        <v-card class="glass-modal rounded-xl pa-4">
+          <v-card-title class="d-flex justify-space-between align-center px-4">
+            <span class="text-h6 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Asignar Ingeniero</span>
+            <v-btn icon="mdi-close" :color="isDarkTheme ? 'white' : 'black'" variant="text" @click="assignEngineerDialog = false"></v-btn>
+          </v-card-title>
+          <v-card-text class="pt-4">
+            <v-autocomplete
+              v-model="selectedEngineerToAssign"
+              :items="engineersList"
+              item-title="FullName"
+              item-value="UserID"
+              label="Buscar Ingeniero"
+              variant="solo-filled"
+              :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+              class="custom-input"
+            ></v-autocomplete>
+          </v-card-text>
+          <v-card-actions class="px-6 pb-6 pt-0 justify-end">
+            <v-btn color="grey" variant="text" @click="assignEngineerDialog = false" class="font-weight-bold px-4">Cancelar</v-btn>
+            <v-btn color="primary" variant="elevated" @click="assignEngineer" :loading="assignLoading" :disabled="!selectedEngineerToAssign" class="premium-btn px-6 font-weight-bold">Asignar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Diálogo de Respuestas Automáticas -->
+      <v-dialog v-model="cannedResponseDialog" max-width="600px">
+        <v-card class="glass-modal rounded-xl pa-4">
+          <v-card-title class="d-flex justify-space-between align-center px-4">
+            <span class="text-h6 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Respuestas Automáticas</span>
+            <v-btn icon="mdi-close" :color="isDarkTheme ? 'white' : 'black'" variant="text" @click="cannedResponseDialog = false"></v-btn>
+          </v-card-title>
+          <v-card-text class="pt-4">
+            <div v-if="cannedResponses.length === 0" class="text-center text-grey">
+              No hay respuestas automáticas configuradas.
+            </div>
+            <v-list class="bg-transparent">
+              <v-list-item
+                v-for="resp in cannedResponses"
+                :key="resp.AutoReplyID"
+                class="mb-2 rounded-lg border border-opacity-10"
+                :class="isDarkTheme ? 'bg-grey-darken-4' : 'bg-grey-lighten-4'"
+                @click="applyCannedResponse(resp.Body)"
+              >
+                <v-list-item-title class="font-weight-bold text-primary">{{ resp.Title }}</v-list-item-title>
+                <v-list-item-subtitle class="text-caption mt-1 whitespace-pre-line" style="line-height: 1.2; max-height: 2.4em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                  {{ resp.Body }}
+                </v-list-item-subtitle>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
         </v-card>
       </v-dialog>
 
@@ -740,6 +883,42 @@ const openTickets = computed(() => tickets.value.filter(t => t.Status === 'Open'
 const closedTickets = computed(() => tickets.value.filter(t => t.Status === 'Closed' || t.Status === 'Resolved').length)
 
 const activeTab = ref('my_tickets')
+
+// Export CSV
+const exportDialog = ref(false)
+const exportLoading = ref(false)
+const exportDates = ref({ from: '', to: '' })
+
+const openExportDialog = () => {
+  exportDates.value = { from: '', to: '' }
+  exportDialog.value = true
+}
+
+const downloadCsv = async () => {
+  exportLoading.value = true
+  try {
+    let url = '/api/client/tickets/export'
+    if (exportDates.value.from && exportDates.value.to) {
+      url += `?from=${exportDates.value.from}&to=${exportDates.value.to}`
+    }
+    const response = await api.get(url, { responseType: 'blob' })
+    const urlObj = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = urlObj
+    const fileName = `Tickets_${exportDates.value.from || 'todos'}_${exportDates.value.to || 'todos'}.csv`
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    exportDialog.value = false
+  } catch (error) {
+    console.error('Error exporting CSV:', error)
+    globalMsg.value = 'Error al exportar los datos.'
+    globalMsgType.value = 'error'
+  } finally {
+    exportLoading.value = false
+  }
+}
 
 // Buscador r\u00e1pido
 const searchQuery = ref('')
@@ -1162,6 +1341,101 @@ const deleteUser = async (userItem) => {
 }
 
 // Ver detalles e historial de conversación de un Ticket
+const replyLoading = ref(false)
+
+// Asignación Múltiple
+const ticketAssignees = ref([])
+const engineersList = ref([])
+const assignEngineerDialog = ref(false)
+const selectedEngineerToAssign = ref(null)
+const assignLoading = ref(false)
+
+// Respuestas automáticas
+const cannedResponseDialog = ref(false)
+const cannedResponses = ref([])
+
+const fetchAssignees = async (ticketId) => {
+  if (!isAdminOrInovatech.value) return
+  try {
+    const res = await api.get(`/api/helpdesk/tickets/${ticketId}/assignees`)
+    ticketAssignees.value = res.data
+  } catch (error) {
+    console.error('Error fetching assignees:', error)
+  }
+}
+
+const fetchEngineersList = async () => {
+  if (!isAdminOrInovatech.value) return
+  try {
+    const res = await api.get('/api/helpdesk/engineers')
+    engineersList.value = res.data
+  } catch (error) {
+    console.error('Error fetching engineers:', error)
+  }
+}
+
+const assignEngineer = async () => {
+  if (!selectedEngineerToAssign.value || !selectedTicket.value) return
+  assignLoading.value = true
+  try {
+    await api.post(`/api/helpdesk/tickets/${selectedTicket.value.TicketID}/assignees`, {
+      userID: selectedEngineerToAssign.value
+    })
+    globalMsg.value = 'Ingeniero asignado exitosamente.'
+    globalMsgType.value = 'success'
+    assignEngineerDialog.value = false
+    selectedEngineerToAssign.value = null
+    fetchAssignees(selectedTicket.value.TicketID)
+    fetchTickets()
+  } catch (error) {
+    console.error('Error assigning engineer:', error)
+    globalMsg.value = error.response?.data?.message || 'Error al asignar.'
+    globalMsgType.value = 'error'
+  } finally {
+    assignLoading.value = false
+  }
+}
+
+const removeAssignee = async (userId) => {
+  if (!confirm('¿Seguro que deseas remover este ingeniero del ticket?')) return
+  try {
+    await api.delete(`/api/helpdesk/tickets/${selectedTicket.value.TicketID}/assignees/${userId}`)
+    globalMsg.value = 'Ingeniero removido.'
+    globalMsgType.value = 'success'
+    fetchAssignees(selectedTicket.value.TicketID)
+    fetchTickets()
+  } catch (error) {
+    console.error('Error removing assignee:', error)
+    globalMsg.value = error.response?.data?.message || 'Error al remover.'
+    globalMsgType.value = 'error'
+  }
+}
+
+const fetchCannedResponses = async () => {
+  try {
+    const res = await api.get('/api/helpdesk/auto-replies')
+    cannedResponses.value = res.data
+    cannedResponseDialog.value = true
+  } catch (error) {
+    console.error('Error fetching canned responses:', error)
+    globalMsg.value = 'Error al cargar respuestas automáticas.'
+    globalMsgType.value = 'error'
+  }
+}
+
+const applyCannedResponse = (bodyTemplate) => {
+  let body = bodyTemplate
+  if (selectedTicket.value) {
+    body = body.replace(/{NOMBRE_CLIENTE}/g, selectedTicket.value.ReportedByName || '')
+    body = body.replace(/{FOLIO_TICKET}/g, selectedTicket.value.TrackingID || '')
+    body = body.replace(/{NOMBRE_INGENIERO}/g, clientName.value || '')
+    body = body.replace(/{LINK_PORTAL}/g, `${window.location.origin}/dashboard`)
+    body = body.replace(/{LINK_ENCUESTA}/g, `${window.location.origin}/survey/${selectedTicket.value.TrackingID || ''}`)
+  }
+  replyText.value = body
+  cannedResponseDialog.value = false
+}
+
 const viewTicketDetails = async (ticket) => {
   selectedTicket.value = ticket
   detailsDialog.value = true
@@ -1171,9 +1445,15 @@ const viewTicketDetails = async (ticket) => {
   
   try {
     const response = await api.get(`/api/client/tickets/${ticket.TicketID}`)
-    selectedTicket.value = response.data.ticket
-    ticketMessages.value = response.data.messages
-    ticketAttachments.value = response.data.attachments || []
+    const data = response.data
+    selectedTicket.value = data.ticket
+    ticketMessages.value = data.messages || []
+    ticketAttachments.value = data.attachments || []
+    detailsDialog.value = true
+    
+    if (isAdminOrInovatech.value) {
+      await fetchAssignees(ticket.TicketID)
+    }
   } catch (error) {
     console.error('Error al cargar el detalle del ticket:', error)
   }

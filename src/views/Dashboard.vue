@@ -147,6 +147,11 @@
                     <template v-slot:item.CreatedAt="{ item }">
                       <span>{{ formatDate(item.CreatedAt) }}</span>
                     </template>
+                    <template v-slot:item.AssignedToName="{ item }">
+                      <v-chip size="small" variant="tonal" :color="item.AssignedToName ? 'info' : 'grey'">
+                        {{ item.AssignedToName || 'En espera de asignación' }}
+                      </v-chip>
+                    </template>
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon="mdi-eye-outline" variant="text" color="primary" @click="viewTicketDetails(item)" title="Ver Detalles"></v-btn>
                     </template>
@@ -173,6 +178,11 @@
                     </template>
                     <template v-slot:item.CreatedAt="{ item }">
                       <span>{{ formatDate(item.CreatedAt) }}</span>
+                    </template>
+                    <template v-slot:item.AssignedToName="{ item }">
+                      <v-chip size="small" variant="tonal" :color="item.AssignedToName ? 'info' : 'grey'">
+                        {{ item.AssignedToName || 'En espera de asignación' }}
+                      </v-chip>
                     </template>
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon="mdi-eye-outline" variant="text" color="primary" @click="viewTicketDetails(item)" title="Ver Detalles"></v-btn>
@@ -215,7 +225,7 @@
         </v-row>
 
         <!-- Diálogo: Crear Nuevo Ticket -->
-        <v-dialog v-model="createTicketDialog" max-width="600px" persistent>
+        <v-dialog v-model="createTicketDialog" max-width="800px" persistent>
           <v-card class="glass-modal rounded-xl pa-4" :class="{ 'bg-dark': isDarkTheme }">
             <v-card-title class="d-flex justify-space-between align-center px-4">
               <span class="text-h5 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Crear Solicitud de Soporte</span>
@@ -226,10 +236,9 @@
               <v-form ref="ticketForm" v-model="isFormValid">
                 <!-- Detalles Principales -->
                 <v-row>
-                  <v-col cols="12" sm="6">
+                  <v-col cols="12" sm="8">
                     <v-text-field
                       v-model="newTicket.title"
-                      label="Asunto / Título Breve"
                       placeholder="Ej: Problema con el ERP"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
@@ -237,24 +246,31 @@
                       :disabled="formLoading"
                       class="custom-input"
                       required
-                    ></v-text-field>
+                    >
+                      <template v-slot:label>
+                        Asunto / Título Breve <span class="text-error ml-1">*</span>
+                      </template>
+                    </v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6">
+                  <v-col cols="12" sm="4">
                     <v-select
                       v-model="newTicket.category"
                       :items="categories"
                       item-title="Name"
                       item-value="CategoryID"
-                      label="Categoría del Problema"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :rules="[v => !!v || 'Selecciona una categoría']"
                       :disabled="formLoading"
                       class="custom-input"
                       required
-                    ></v-select>
+                    >
+                      <template v-slot:label>
+                        Categoría del Problema <span class="text-error ml-1">*</span>
+                      </template>
+                    </v-select>
                   </v-col>
-                  <v-col cols="12" sm="6">
+                  <v-col cols="12" sm="4">
                     <v-select
                       v-model="newTicket.priority"
                       :items="priorityOptions"
@@ -267,7 +283,7 @@
                       class="custom-input"
                     ></v-select>
                   </v-col>
-                  <v-col cols="12" sm="6">
+                  <v-col cols="12" sm="4">
                     <v-text-field
                       v-model="newTicket.contactPhone"
                       label="Teléfono de Contacto"
@@ -278,7 +294,7 @@
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6">
+                  <v-col cols="12" sm="4">
                     <v-text-field
                       v-model="newTicket.location"
                       label="Ubicación del Equipo"
@@ -289,7 +305,7 @@
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="12">
+                  <v-col cols="12" sm="6">
                     <v-text-field
                       v-model="newTicket.contactAddress"
                       label="Dirección de Contacto"
@@ -300,9 +316,7 @@
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
-
-                  <!-- Campo Referencia (entre Asunto y Descripción) -->
-                  <v-col cols="12">
+                  <v-col cols="12" sm="6">
                     <v-text-field
                       v-model="newTicket.reference"
                       label="Referencia (Opcional)"
@@ -339,26 +353,29 @@
                     <v-text-field
                       v-model="newTicket.brand"
                       label="Marca (Ej: Dell)"
+                      placeholder="Opcional"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="4" v-if="newTicket.brand">
+                  <v-col cols="12" sm="4">
                     <v-text-field
                       v-model="newTicket.model"
                       label="Modelo (Ej: Latitude)"
+                      placeholder="Opcional"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="4" v-if="newTicket.model">
+                  <v-col cols="12" sm="4">
                     <v-text-field
                       v-model="newTicket.serialNumber"
                       label="No. de Serie (Opcional)"
+                      placeholder="Opcional"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
@@ -465,7 +482,6 @@
 
                 <v-textarea
                   v-model="newTicket.description"
-                  label="Descripción Detallada"
                   placeholder="Describe de la manera más clara el problema."
                   variant="solo-filled"
                   :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
@@ -474,7 +490,11 @@
                   :disabled="formLoading"
                   class="custom-input"
                   required
-                ></v-textarea>
+                >
+                  <template v-slot:label>
+                    Descripción Detallada <span class="text-error ml-1">*</span>
+                  </template>
+                </v-textarea>
               </v-form>
             </v-card-text>
 
@@ -908,6 +928,7 @@ const headers = [
   { title: 'Asunto / Título', key: 'Subject' },
   { title: 'Fecha de Creación', key: 'CreatedAt' },
   { title: 'Estado del Caso', key: 'Status', align: 'center' },
+  { title: 'Ingeniero a cargo', key: 'AssignedToName', align: 'center' },
   { title: 'Detalles', key: 'actions', sortable: false, align: 'center' },
 ]
 
@@ -988,6 +1009,7 @@ const headersAllTickets = [
   { title: 'Empresa', key: 'CompanyName' },
   { title: 'Fecha', key: 'CreatedAt' },
   { title: 'Estado', key: 'Status', align: 'center' },
+  { title: 'Ingeniero a cargo', key: 'AssignedToName', align: 'center' },
   { title: 'Detalles', key: 'actions', sortable: false, align: 'center' },
 ]
 

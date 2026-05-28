@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container h-screen overflow-hidden d-flex align-center justify-center">
+  <div class="login-container h-screen overflow-y-auto d-flex align-center justify-center">
     <div class="login-bg-overlay"></div>
 
     <!-- Contenido Principal -->

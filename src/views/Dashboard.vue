@@ -667,9 +667,8 @@
         </v-dialog>
       </v-container>
 
-      <!-- Diálogo de Gestión de Usuario -->
       <v-dialog v-model="userDialog" max-width="500px" persistent>
-        <v-card class="glass-modal rounded-xl pa-4">
+        <v-card class="glass-modal rounded-xl pa-4" :class="{ 'bg-dark': isDarkTheme }">
           <v-card-title class="d-flex justify-space-between align-center px-4">
             <span class="text-h5 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
               {{ isEditingUser ? 'Editar Usuario' : 'Nuevo Usuario' }}
@@ -746,9 +745,8 @@
         </v-card>
       </v-dialog>
 
-      <!-- Diálogo para Exportar CSV -->
       <v-dialog v-model="exportDialog" max-width="400px" persistent>
-        <v-card class="glass-modal rounded-xl pa-4">
+        <v-card class="glass-modal rounded-xl pa-4" :class="{ 'bg-dark': isDarkTheme }">
           <v-card-title class="d-flex justify-space-between align-center px-4">
             <span class="text-h6 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
               Exportar Tickets a CSV
@@ -792,7 +790,7 @@
 
       <!-- Diálogo para Asignar Ingeniero -->
       <v-dialog v-model="assignEngineerDialog" max-width="400px">
-        <v-card class="glass-modal rounded-xl pa-4">
+        <v-card class="glass-modal rounded-xl pa-4" :class="{ 'bg-dark': isDarkTheme }">
           <v-card-title class="d-flex justify-space-between align-center px-4">
             <span class="text-h6 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Asignar Ingeniero</span>
             <v-btn icon="mdi-close" :color="isDarkTheme ? 'white' : 'black'" variant="text" @click="assignEngineerDialog = false"></v-btn>
@@ -816,9 +814,8 @@
         </v-card>
       </v-dialog>
 
-      <!-- Diálogo de Respuestas Automáticas -->
       <v-dialog v-model="cannedResponseDialog" max-width="600px">
-        <v-card class="glass-modal rounded-xl pa-4">
+        <v-card class="glass-modal rounded-xl pa-4" :class="{ 'bg-dark': isDarkTheme }">
           <v-card-title class="d-flex justify-space-between align-center px-4">
             <span class="text-h6 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Respuestas Automáticas</span>
             <v-btn icon="mdi-close" :color="isDarkTheme ? 'white' : 'black'" variant="text" @click="cannedResponseDialog = false"></v-btn>
@@ -1595,8 +1592,8 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1) !important;
 }
 
 .bg-dark .glass-modal {
@@ -1616,13 +1613,34 @@ onMounted(() => {
 }
 
 .custom-input :deep(.v-field) {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
   transition: all 0.3s ease;
-  color: white;
+  color: #1e293b !important;
+}
+
+.custom-input :deep(.v-field__input) {
+  color: #1e293b !important;
+}
+
+.custom-input :deep(.v-label) {
+  color: #64748b !important;
+}
+
+.bg-dark .custom-input :deep(.v-field) {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.bg-dark .custom-input :deep(.v-field__input) {
+  color: white !important;
+}
+
+.bg-dark .custom-input :deep(.v-label) {
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .custom-input :deep(.v-field--focused) {
-  border-color: #2196F3;
+  border-color: #2196F3 !important;
   background: rgba(33, 150, 243, 0.08) !important;
 }
 

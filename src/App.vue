@@ -35,6 +35,9 @@ onMounted(() => {
 </script>
 
 <style>
+* {
+  font-family: 'Plus Jakarta Sans', 'Outfit', 'Roboto', sans-serif;
+}
 .dark-theme {
   background-color: #0a0a0a !important;
   color: white !important;

@@ -7,7 +7,7 @@
       <v-col cols="12" sm="10" md="8" lg="6" xl="4">
         <v-card class="glass-card pa-8 rounded-xl" elevation="24">
           <div class="text-center mb-8 logo-container">
-            <v-img src="/logo-inovatech.svg" height="42" contain class="mx-auto mb-5" alt="Inovatech Logo"></v-img>
+            <v-img src="/assets/logo-Em6pMsZK.png" height="42" contain class="mx-auto mb-5" alt="Inovatech Logo"></v-img>
             <h1 class="text-h4 font-weight-black text-white gradient-text">Bienvenido a Inovatech</h1>
             <p class="text-subtitle-1 text-grey-lighten-2 mt-2">Mesa de Ayuda y Soporte Técnico</p>
           </div>

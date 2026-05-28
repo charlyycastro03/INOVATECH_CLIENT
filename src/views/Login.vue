@@ -7,8 +7,9 @@
       <v-col cols="12" sm="10" md="8" lg="6" xl="4">
         <v-card class="glass-card pa-8 rounded-xl" elevation="24">
           <div class="text-center mb-8 logo-container">
-            <h1 class="text-h4 font-weight-black text-white gradient-text">PORTAL DE CLIENTES</h1>
-            <p class="text-subtitle-1 text-grey-lighten-1 mt-2">Plataforma de Soporte Inteligente</p>
+            <v-img src="/logo-inovatech.svg" height="42" contain class="mx-auto mb-5" alt="Inovatech Logo"></v-img>
+            <h1 class="text-h4 font-weight-black text-white gradient-text">Bienvenido a Inovatech</h1>
+            <p class="text-subtitle-1 text-grey-lighten-2 mt-2">Mesa de Ayuda y Soporte Técnico</p>
           </div>
 
           <v-divider class="mb-6 opacity-20" color="white"></v-divider>
@@ -84,21 +85,29 @@
 
           <!-- OTP VERIFICATION (SHARED) -->
           <div v-if="step === 2" class="fade-in mt-2">
-            <v-btn icon="mdi-chevron-left" variant="text" size="small" class="mb-4 text-white" @click="step = 1; code = '';"></v-btn>
-            <h2 class="text-h5 font-weight-bold mb-2 text-white text-center">Verificación</h2>
-            <p class="text-body-2 text-grey-lighten-2 mb-6 text-center">
-              Hemos enviado un código de 6 dígitos a <strong>{{ tab === 'register' ? regForm.email : email }}</strong>
-            </p>
-            <v-form @submit.prevent="verifyLogin">
+            <v-btn icon="mdi-chevron-left" variant="text" size="small" class="mb-2 text-white" @click="step = 1; code = '';"></v-btn>
+            
+            <div class="text-center mb-6">
+              <div class="d-inline-flex pa-4 rounded-circle mb-4 pulse-animation" style="background: rgba(33, 150, 243, 0.15) !important;">
+                <v-icon size="48" color="primary">mdi-shield-lock-outline</v-icon>
+              </div>
+              <h2 class="text-h5 font-weight-bold mb-2 text-white text-center">Código de Seguridad</h2>
+              <p class="text-body-2 text-grey-lighten-2 text-center px-4" style="line-height: 1.4;">
+                Hemos enviado un código temporal de 6 dígitos a <br>
+                <span class="text-primary font-weight-bold">{{ tab === 'register' ? regForm.email : email }}</span>
+              </p>
+            </div>
+
+            <v-form @submit.prevent="verifyLogin" class="px-4">
               <v-text-field
                 v-model="code"
-                prepend-inner-icon="mdi-shield-check"
-                placeholder="0 0 0 0 0 0"
+                placeholder="······"
                 variant="solo-filled"
                 class="custom-input otp-input mb-4"
-                bg-color="rgba(255,255,255,0.05)"
-                rounded="lg"
+                bg-color="rgba(255,255,255,0.04)"
+                rounded="xl"
                 maxlength="6"
+                flat
                 :disabled="loading"
                 required
               ></v-text-field>
@@ -263,10 +272,30 @@ const verifyLogin = async () => {
 }
 
 .otp-input :deep(input) {
-  text-align: center;
-  font-size: 1.5rem;
-  letter-spacing: 0.8rem;
-  font-weight: bold;
+  text-align: center !important;
+  font-size: 2.2rem !important;
+  letter-spacing: 1.4rem !important;
+  font-weight: 800 !important;
+  color: #90CAF9 !important;
+  font-family: 'Courier New', Courier, monospace !important;
+  padding-left: 1.4rem !important;
+  height: 70px !important;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(33, 150, 243, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+  }
 }
 
 .premium-btn {

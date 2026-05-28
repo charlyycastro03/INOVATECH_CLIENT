@@ -1606,10 +1606,16 @@ onMounted(() => {
 }
 
 .gradient-text {
-  background: linear-gradient(45deg, #FFFFFF, #90CAF9);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: linear-gradient(45deg, #1e3a8a, #3b82f6) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
   letter-spacing: 1px;
+}
+
+.bg-dark .gradient-text {
+  background: linear-gradient(45deg, #FFFFFF, #90CAF9) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
 }
 
 .custom-input :deep(.v-field) {

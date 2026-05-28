@@ -1492,11 +1492,41 @@ const fetchCannedResponses = async () => {
 const applyCannedResponse = (bodyTemplate) => {
   let body = bodyTemplate
   if (selectedTicket.value) {
-    body = body.replace(/{NOMBRE_CLIENTE}/g, selectedTicket.value.ReportedByName || '')
-    body = body.replace(/{FOLIO_TICKET}/g, selectedTicket.value.TrackingID || '')
-    body = body.replace(/{NOMBRE_INGENIERO}/g, clientName.value || '')
-    body = body.replace(/{LINK_PORTAL}/g, `${window.location.origin}/dashboard`)
-    body = body.replace(/{LINK_ENCUESTA}/g, `${window.location.origin}/survey/${selectedTicket.value.TrackingID || ''}`)
+    const cName = selectedTicket.value.ReportedByName || selectedTicket.value.CreatorName || 'Cliente'
+    const trackingId = selectedTicket.value.TrackingID || ''
+    const engName = clientName.value || 'Staff de Soporte'
+    const surveyLink = `${window.location.origin}/survey/${trackingId}`
+    const portalLink = `${window.location.origin}/dashboard`
+
+    // Replace curly brace placeholders
+    body = body.replace(/{NOMBRE_CLIENTE}/g, cName)
+    body = body.replace(/{FOLIO_TICKET}/g, trackingId)
+    body = body.replace(/{NOMBRE_INGENIERO}/g, engName)
+    body = body.replace(/{LINK_PORTAL}/g, portalLink)
+    body = body.replace(/{LINK_ENCUESTA}/g, surveyLink)
+
+    // Replace parenthesized client name placeholders
+    body = body.replace(/\(Nombre del cliente\)/gi, cName)
+               .replace(/\(Nombre del cliente automatico\)/gi, cName)
+               .replace(/\(nombre del cliente tomado en automatico\)/gi, cName)
+
+    // Replace parenthesized folio / tracking ID placeholders
+    body = body.replace(/\(Folio de ticket\)/gi, trackingId)
+               .replace(/\(Folio de tickt automatico\)/gi, trackingId)
+               .replace(/\(folio de ticket\)/gi, trackingId)
+               .replace(/\(Folio automatico de dicho ticket\)/gi, trackingId)
+
+    // Replace parenthesized engineer name placeholders
+    body = body.replace(/\(Nombre del ingeniero\)/gi, engName)
+               .replace(/\(Nombre del ingeniero que respondio \(en automatico\)\)/gi, engName)
+               .replace(/\(nombre el infenieor en automatico\)/gi, engName)
+               .replace(/\(Ingeniero automatico \)/gi, engName)
+               .replace(/\(Ingeniero automatico\)/gi, engName)
+               .replace(/\(ingeniero autotmatico\)/gi, engName)
+
+    // Replace parenthesized survey link placeholders
+    body = body.replace(/\(Link de la encuesta\)/gi, surveyLink)
+               .replace(/\(link de forms.*?\)/gi, surveyLink)
   }
   replyText.value = body
   cannedResponseDialog.value = false

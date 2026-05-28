@@ -319,6 +319,7 @@
                     <v-autocomplete
                       v-model="newTicket.onBehalfOf"
                       :items="autocompleteUsers"
+                      :custom-filter="filterUser"
                       item-title="FullName"
                       item-value="UserID"
                       label="Reportar en nombre de (Opcional)"
@@ -1006,6 +1007,13 @@ const headersUsers = [
 ]
 
 const autocompleteUsers = ref([])
+const filterUser = (itemTitle, queryText, item) => {
+  const name = item.raw.FullName ? item.raw.FullName.toLowerCase() : ''
+  const email = item.raw.Email ? item.raw.Email.toLowerCase() : ''
+  const company = item.raw.Company ? item.raw.Company.toLowerCase() : ''
+  const q = queryText.toLowerCase()
+  return name.includes(q) || email.includes(q) || company.includes(q)
+}
 const previewUrl = ref(null)
 const uploadingFile = ref(false)
 

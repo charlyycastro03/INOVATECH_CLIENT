@@ -11,6 +11,21 @@ const routes = [
     component: () => import('../views/Login.vue')
   },
   {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: () => import('../views/AdminLogin.vue')
+  },
+  {
+    path: '/helpdesk/settings/notifications',
+    name: 'NotifSettings',
+    component: () => import('../views/NotifSettings.vue')
+  },
+  {
+    path: '/helpdesk/kpis',
+    name: 'Kpis',
+    component: () => import('../views/Kpis.vue')
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../views/Dashboard.vue')

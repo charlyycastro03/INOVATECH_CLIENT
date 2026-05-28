@@ -12,7 +12,13 @@
         </div>
       </div>
       <v-spacer></v-spacer>
-      <v-btn icon variant="text" @click="toggleTheme" class="mr-3" :color="isDarkTheme ? 'white' : 'black'">
+      <v-btn v-if="isAdminOrInovatech" icon variant="text" to="/helpdesk/kpis" class="mr-2" :color="isDarkTheme ? 'white' : 'black'" title="Dashboard KPIs">
+        <v-icon>mdi-chart-box-outline</v-icon>
+      </v-btn>
+      <v-btn v-if="isAdminOrInovatech" icon variant="text" to="/helpdesk/settings/notifications" class="mr-2" :color="isDarkTheme ? 'white' : 'black'" title="Configuración de Notificaciones">
+        <v-icon>mdi-cog-outline</v-icon>
+      </v-btn>
+      <v-btn icon variant="text" @click="toggleTheme" class="mr-3" :color="isDarkTheme ? 'white' : 'black'" title="Cambiar Tema">
         <v-icon>{{ isDarkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
       <v-btn variant="outlined" color="error" prepend-icon="mdi-logout" @click="logout" class="rounded-lg">
@@ -161,7 +167,7 @@
                       <span class="font-weight-bold text-primary">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
-                      <v-chip :color="getStatusColor(item.Status)" size="small" class="font-weight-bold text-uppercase px-3" variant="flat">
+                      <v-chip :color="getStatusColor(item.Status)" size="small" :class="['font-weight-bold', 'text-uppercase', 'px-3', item.Status === 'Visa en Día' ? 'text-black' : 'text-white']" variant="flat">
                         {{ translateStatus(item.Status) }}
                       </v-chip>
                     </template>
@@ -472,7 +478,7 @@
               <v-row class="mb-6 rounded-lg pa-3 mx-0" :style="{ background: isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }">
                 <v-col cols="12" sm="4" md="3" class="py-1">
                   <div class="text-caption text-grey-lighten-1">Estado</div>
-                  <v-chip :color="getStatusColor(selectedTicket.Status)" size="small" class="font-weight-bold text-uppercase" variant="flat">
+                  <v-chip :color="getStatusColor(selectedTicket.Status)" size="small" :class="['font-weight-bold', 'text-uppercase', selectedTicket.Status === 'Visa en Día' ? 'text-black' : 'text-white']" variant="flat">
                     {{ translateStatus(selectedTicket.Status) }}
                   </v-chip>
                 </v-col>
@@ -484,7 +490,13 @@
                   <div class="text-caption text-grey-lighten-1">Prioridad</div>
                   <div class="font-weight-bold text-warning">{{ selectedTicket.Priority || 'Medium' }}</div>
                 </v-col>
-                <v-col cols="12" sm="6" md="3" class="py-1">
+                <v-col cols="12" sm="6" md="3" class="py-1" v-if="selectedTicket.Status === 'Resolved' || selectedTicket.Status === 'Closed'">
+                  <div class="text-caption text-grey-lighten-1">Resuelto Por</div>
+                  <div class="font-weight-bold text-success text-truncate">
+                    {{ selectedTicket.ResolvedByUserName || 'Staff' }}
+                  </div>
+                </v-col>
+                <v-col cols="12" sm="6" md="3" class="py-1" v-else>
                   <div class="text-caption text-grey-lighten-1">Atendido Por</div>
                   <div class="d-flex flex-wrap gap-2 align-center mt-1">
                     <v-chip
@@ -1536,41 +1548,59 @@ onMounted(() => {
   background-color: #0a0a0a;
   position: relative;
   background-image: radial-gradient(circle at top right, rgba(30, 58, 138, 0.5) 0%, transparent 50%),
-                    radial-gradient(circle at bottom left, rgba(15, 23, 42, 0.8) 0%, transparent 50%);
-  min-height: 100vh;
-}
-
-.dropzone-active {
-  border-color: #2196f3 !important;
-  background-color: rgba(33, 150, 243, 0.1) !important;
-}
-
 .glass-navbar {
-  background: rgba(10, 10, 10, 0.6) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-  will-change: transform, backdrop-filter;
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.gradient-text {
+  background: linear-gradient(45deg, #1e3a8a, #2563eb, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-dark .gradient-text {
+  background: linear-gradient(45deg, #60a5fa, #93c5fd, #bfdbfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4) !important;
-  color: white;
-  will-change: transform, backdrop-filter;
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.bg-dark .glass-card {
+  background: rgba(20, 20, 20, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.bg-dark .glass-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
 }
 
 .glass-modal {
-  background: rgba(15, 20, 25, 0.95) !important; /* Much more solid background for readability */
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2) !important;
+}
+
+.bg-dark .glass-modal {
+  background: rgba(30, 30, 30, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
-  color: white;
-  will-change: transform, backdrop-filter;
 }
 
 .z-index-2 {

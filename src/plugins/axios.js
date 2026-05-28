@@ -3,7 +3,7 @@ import axios from 'axios'
 // Configura la URL base usando la variable de entorno de Vite o una ruta relativa por defecto
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '',
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
   }

@@ -91,7 +91,7 @@
               <v-tabs v-model="activeTab" color="primary" align-tabs="start" class="px-4 pt-2">
                 <v-tab value="my_tickets" class="text-subtitle-2 font-weight-bold">Mis Tickets</v-tab>
                 <v-tab value="all_tickets" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Todos los Tickets</v-tab>
-                <v-tab value="users" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Usuarios Internos</v-tab>
+                <v-tab value="users" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Usuarios y Clientes</v-tab>
               </v-tabs>
               
               <v-divider class="mb-2"></v-divider>
@@ -194,8 +194,8 @@
                     :theme="isDarkTheme ? 'dark' : 'light'"
                   >
                     <template v-slot:item.RoleID="{ item }">
-                      <v-chip :color="item.RoleID === 1 ? 'error' : (item.RoleID === 4 ? 'info' : 'primary')" size="small" variant="flat">
-                        {{ { 1: 'Admin', 2: 'Caja', 4: 'Ingeniería', 5: 'Monitor' }[item.RoleID] || 'Staff' }}
+                      <v-chip :color="item.RoleID === 1 ? 'error' : (item.RoleID === 4 ? 'info' : (item.RoleID === 3 ? 'success' : 'primary'))" size="small" variant="flat">
+                        {{ { 1: 'Admin', 2: 'Caja', 3: 'Cliente', 4: 'Ingeniería', 5: 'Monitor' }[item.RoleID] || 'Staff' }}
                       </v-chip>
                     </template>
                     <template v-slot:item.IsActive="{ item }">
@@ -723,7 +723,7 @@
 
               <v-select
                 v-model="userFormData.RoleID"
-                :items="[{ title: 'Admin', value: 1 }, { title: 'Ingeniería', value: 4 }, { title: 'Monitor', value: 5 }, { title: 'Caja', value: 2 }]"
+                :items="[{ title: 'Admin', value: 1 }, { title: 'Ingeniería', value: 4 }, { title: 'Cliente', value: 3 }, { title: 'Monitor', value: 5 }, { title: 'Caja', value: 2 }]"
                 item-title="title"
                 item-value="value"
                 label="Rol de Sistema"

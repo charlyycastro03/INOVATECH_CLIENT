@@ -261,13 +261,24 @@ const verifyLogin = async () => {
 }
 
 .custom-input :deep(.v-field) {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   transition: all 0.3s ease;
-  color: white;
+}
+
+.custom-input :deep(.v-field__input) {
+  color: white !important;
+}
+
+.custom-input :deep(.v-label) {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.custom-input :deep(.v-icon) {
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .custom-input :deep(.v-field--focused) {
-  border-color: #2196F3;
+  border-color: #2196F3 !important;
   background: rgba(33, 150, 243, 0.08) !important;
 }
 

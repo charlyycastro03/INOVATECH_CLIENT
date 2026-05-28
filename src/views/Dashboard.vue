@@ -88,13 +88,30 @@
                 <v-tab value="users" class="text-subtitle-2 font-weight-bold" v-if="isAdminOrInovatech">Usuarios</v-tab>
               </v-tabs>
               
+              <v-divider class="mb-2"></v-divider>
+
+              <!-- Buscador rápido -->
+              <div class="px-4 pb-3 pt-1">
+                <v-text-field
+                  v-model="searchQuery"
+                  prepend-inner-icon="mdi-magnify"
+                  label="Buscar por folio, asunto, estado o nombre..."
+                  variant="solo-filled"
+                  density="compact"
+                  hide-details
+                  clearable
+                  :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'"
+                  class="rounded-lg"
+                ></v-text-field>
+              </div>
+
               <v-divider class="mb-4"></v-divider>
 
               <v-window v-model="activeTab">
                 <v-window-item value="my_tickets">
                   <v-data-table
                     :headers="headers"
-                    :items="tickets"
+                    :items="filteredTickets"
                     :loading="loading"
                     loading-text="Cargando tus tickets..."
                     no-data-text="No tienes ningún ticket de soporte registrado aún."
@@ -221,19 +238,6 @@
                   </v-col>
                   <v-col cols="12" sm="6">
                     <v-select
-                      v-model="newTicket.ticketType"
-                      :items="typeOptions"
-                      item-title="title"
-                      item-value="value"
-                      label="Tipo de Solicitud"
-                      variant="solo-filled"
-                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
-                      :disabled="formLoading"
-                      class="custom-input"
-                    ></v-select>
-                  </v-col>
-                  <v-col cols="12" sm="6">
-                    <v-select
                       v-model="newTicket.priority"
                       :items="priorityOptions"
                       item-title="title"
@@ -259,7 +263,7 @@
                   <v-col cols="12" sm="6">
                     <v-text-field
                       v-model="newTicket.location"
-                      label="Ubicación / Sucursal"
+                      label="Ubicación del Equipo"
                       placeholder="Ej: Oficina Central MTY"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
@@ -276,6 +280,20 @@
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input"
+                    ></v-text-field>
+                  </v-col>
+
+                  <!-- Campo Referencia (entre Asunto y Descripción) -->
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="newTicket.reference"
+                      label="Referencia (Opcional)"
+                      placeholder="Ej: OC-2024-001, Folio interno, etc."
+                      variant="solo-filled"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                      :disabled="formLoading"
+                      class="custom-input"
+                      prepend-inner-icon="mdi-tag-outline"
                     ></v-text-field>
                   </v-col>
                   <!-- On Behalf Of (Admins/Inovatech) -->
@@ -349,12 +367,13 @@
                       v-model="newTicket.assetNumber"
                       label="Número de Placa de Activo"
                       placeholder="Ej: INV-00123"
+                      hint="Solo si cuenta con contrato o póliza de soporte"
+                      persistent-hint
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
                       class="custom-input mb-0"
                       prepend-inner-icon="mdi-barcode-scan"
-                      hide-details
                     ></v-text-field>
                   </div>
                 </v-expand-transition>
@@ -382,7 +401,7 @@
                     <div class="text-body-1 text-center font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">
                       Arrastra tu evidencia aquí o haz clic para explorar
                     </div>
-                    <div class="text-caption text-grey-lighten-1 mt-1">Imágenes, videos y PDFs permitidos (Máx 5MB)</div>
+                    <div class="text-caption text-grey-lighten-1 mt-1">Formatos: PNG, JPG, PDF, DOCX | Tamaño máximo: 5 MB</div>
                   </template>
                   
                   <template v-else>
@@ -467,10 +486,13 @@
                   <div class="text-caption text-grey-lighten-1">Teléfono</div>
                   <div class="font-weight-bold text-truncate">{{ selectedTicket.ContactPhone }}</div>
                 </v-col>
-                <v-col cols="12" sm="12" md="6" class="py-1 mt-2" v-if="selectedTicket.Model || selectedTicket.SerialNumber || selectedTicket.AssetNumber">
+                <v-col cols="12" sm="12" md="6" class="py-1 mt-2" v-if="selectedTicket.Brand || selectedTicket.Model || selectedTicket.SerialNumber || selectedTicket.AssetNumber">
                   <div class="text-caption text-grey-lighten-1">Equipo / Activo</div>
-                  <div class="font-weight-bold text-truncate">
-                    {{ [selectedTicket.Model, selectedTicket.SerialNumber, selectedTicket.AssetNumber].filter(Boolean).join(' | ') }}
+                  <div class="font-weight-bold">
+                    <span v-if="selectedTicket.Brand" class="mr-1">{{ selectedTicket.Brand }}</span>
+                    <span v-if="selectedTicket.Model"> — {{ selectedTicket.Model }}</span>
+                    <span v-if="selectedTicket.SerialNumber" class="text-grey-lighten-1 text-caption ml-2">(S/N: {{ selectedTicket.SerialNumber }})</span>
+                    <span v-if="selectedTicket.AssetNumber" class="text-grey-lighten-1 text-caption ml-2">[Activo: {{ selectedTicket.AssetNumber }}]</span>
                   </div>
                 </v-col>
               </v-row>
@@ -719,6 +741,21 @@ const closedTickets = computed(() => tickets.value.filter(t => t.Status === 'Clo
 
 const activeTab = ref('my_tickets')
 
+// Buscador r\u00e1pido
+const searchQuery = ref('')
+const filteredTickets = computed(() => {
+  const q = searchQuery.value?.toLowerCase().trim() || ''
+  if (!q) return tickets.value
+  return tickets.value.filter(t =>
+    t.TrackingID?.toLowerCase().includes(q) ||
+    t.Subject?.toLowerCase().includes(q) ||
+    translateStatus(t.Status)?.toLowerCase().includes(q) ||
+    t.ReportedByName?.toLowerCase().includes(q) ||
+    t.CompanyName?.toLowerCase().includes(q)
+  )
+})
+
+
 const isAdminOrInovatech = computed(() => {
   if (!user.value) return false;
   const email = user.value.email || user.value.Email || '';
@@ -826,6 +863,7 @@ const onBehalfOfSelected = (selectedUser) => {
 
 const newTicket = ref({
   title: '',
+  reference: '',
   category: null,
   description: '',
   priority: 'Medium',
@@ -876,22 +914,20 @@ const ticketAttachments = ref([])
 const replyText = ref('')
 const replyLoading = ref(false)
 
-// Configuración de Estados
-const getStatusColor = (status) => {
-  if (status === 'Open') return 'success'
-  if (status === 'In Progress') return 'info'
-  if (status === 'Resolved') return 'warning'
-  if (status === 'Closed') return 'grey-lighten-1'
-  return 'primary'
+// Configuración de Estados — colores exactos del MASTER_SCRIPT
+const statusConfig = {
+  'Open':          { label: 'Nuevo',             color: '#2E6DA4' },
+  'Waiting':       { label: 'Esperando resp.',   color: '#D35400' },
+  'Replied':       { label: 'Respondido',        color: '#1D7A4C' },
+  'In Progress':   { label: 'En progreso',       color: '#1A8CFF' },
+  'On Hold':       { label: 'En espera',         color: '#607D8B' },
+  'Waiting Parts': { label: 'En espera piezas',  color: '#7B1FA2' },
+  'Resolved':      { label: 'Resuelto',          color: '#2E7D32' },
+  'Closed':        { label: 'Cerrado',           color: '#455A64' },
 }
 
-const translateStatus = (status) => {
-  if (status === 'Open') return 'Abierto'
-  if (status === 'In Progress') return 'En Progreso'
-  if (status === 'Resolved') return 'Resuelto'
-  if (status === 'Closed') return 'Cerrado'
-  return status
-}
+const getStatusColor = (status) => statusConfig[status]?.color || '#607D8B'
+const translateStatus = (status) => statusConfig[status]?.label || status
 
 const formatDate = (dateString) => {
   if (!dateString) return ''
@@ -923,6 +959,7 @@ const fetchTickets = async () => {
 const openNewTicketDialog = () => {
   newTicket.value = {
     title: '',
+    reference: '',
     category: categories.value.length > 0 ? categories.value[0].CategoryID : 1,
     description: '',
     priority: 'Low',
@@ -957,11 +994,12 @@ const submitTicket = async () => {
     formData.append('category', newTicket.value.category)
     formData.append('description', newTicket.value.description)
     formData.append('priority', newTicket.value.priority)
-    formData.append('ticketType', newTicket.value.ticketType)
+    formData.append('ticketType', 'Incident')  // siempre Incident para clientes
     formData.append('contactPhone', newTicket.value.contactPhone)
     formData.append('contactAddress', newTicket.value.contactAddress)
     formData.append('location', newTicket.value.location)
     formData.append('impactLevel', newTicket.value.impactLevel)
+    if (newTicket.value.reference) formData.append('reference', newTicket.value.reference)
 
     if (newTicket.value.brand) formData.append('brand', newTicket.value.brand)
     if (newTicket.value.model) formData.append('model', newTicket.value.model)

@@ -216,7 +216,7 @@
 
         <!-- Diálogo: Crear Nuevo Ticket -->
         <v-dialog v-model="createTicketDialog" max-width="600px" persistent>
-          <v-card class="glass-modal rounded-xl pa-4">
+          <v-card class="glass-modal rounded-xl pa-4" :class="{ 'bg-dark': isDarkTheme }">
             <v-card-title class="d-flex justify-space-between align-center px-4">
               <span class="text-h5 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Crear Solicitud de Soporte</span>
               <v-btn icon="mdi-close" :color="isDarkTheme ? 'white' : 'black'" variant="text" @click="createTicketDialog = false" :disabled="formLoading"></v-btn>
@@ -464,7 +464,7 @@
 
         <!-- Diálogo: Detalles del Ticket y Conversación -->
         <v-dialog v-model="detailsDialog" max-width="800px" scrollable>
-          <v-card class="glass-modal rounded-xl" v-if="selectedTicket">
+          <v-card class="glass-modal rounded-xl" :class="{ 'bg-dark': isDarkTheme }" v-if="selectedTicket">
             <v-card-title class="d-flex justify-space-between align-center px-6 py-4 bg-primary text-white" style="background: linear-gradient(45deg, #1e3a8a, #2563eb) !important;">
               <div>
                 <span class="text-caption text-uppercase font-weight-bold opacity-75">Caso {{ selectedTicket.TrackingID }}</span>

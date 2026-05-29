@@ -575,16 +575,6 @@
                       {{ selectedTicket.AssignedEngineerName }}
                     </v-chip>
                     <span v-if="ticketAssignees.length === 0 && !selectedTicket.AssignedEngineerName" class="text-caption text-grey">En Cola</span>
-                    <v-btn
-                      v-if="isAdminOrInovatech"
-                      icon="mdi-plus"
-                      size="x-small"
-                      variant="tonal"
-                      color="success"
-                      class="ml-1"
-                      @click="assignEngineerDialog = true"
-                      title="Asignar Ingeniero"
-                    ></v-btn>
                   </div>
                 </v-col>
                 <v-col cols="12" sm="6" md="3" class="py-1 mt-2" v-if="selectedTicket.Location">
@@ -700,16 +690,6 @@
                   class="mr-2 w-100 custom-input"
                 ></v-textarea>
                 <div class="d-flex flex-column gap-2">
-                  <v-btn
-                    v-if="isAdminOrInovatech"
-                    color="info"
-                    icon="mdi-text-box-multiple-outline"
-                    size="small"
-                    class="rounded-lg premium-btn"
-                    title="Respuestas Automáticas"
-                    @click="fetchCannedResponses"
-                  ></v-btn>
-                  
                   <v-btn
                     color="info"
                     icon="mdi-paperclip"

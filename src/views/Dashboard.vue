@@ -135,9 +135,10 @@
                     no-data-text="No tienes ningún ticket de soporte registrado aún."
                     class="bg-transparent custom-table"
                     :theme="isDarkTheme ? 'dark' : 'light'"
+                    @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <span class="font-weight-bold text-primary">{{ item.TrackingID }}</span>
+                      <span class="font-weight-bold" :class="isDarkTheme ? 'text-primary' : 'text-black'">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
                       <v-chip :color="getStatusColor(item.Status)" size="small" class="font-weight-bold text-uppercase px-3" variant="flat">
@@ -148,12 +149,9 @@
                       <span>{{ formatDate(item.CreatedAt) }}</span>
                     </template>
                     <template v-slot:item.AssignedToName="{ item }">
-                      <v-chip size="small" variant="tonal" :color="item.AssignedToName ? 'info' : 'grey'">
+                      <v-chip size="small" :variant="isDarkTheme ? 'tonal' : 'flat'" :color="item.AssignedToName ? (isDarkTheme ? 'info' : 'blue-lighten-4') : (isDarkTheme ? 'grey' : 'grey-lighten-3')" :class="!isDarkTheme ? 'text-black font-weight-bold' : ''">
                         {{ item.AssignedToName || 'En espera de asignación' }}
                       </v-chip>
-                    </template>
-                    <template v-slot:item.actions="{ item }">
-                      <v-btn icon="mdi-eye-outline" variant="text" color="primary" @click="viewTicketDetails(item)" title="Ver Detalles"></v-btn>
                     </template>
                   </v-data-table>
                 </v-window-item>
@@ -167,9 +165,10 @@
                     no-data-text="No hay tickets en el sistema."
                     class="bg-transparent custom-table"
                     :theme="isDarkTheme ? 'dark' : 'light'"
+                    @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <span class="font-weight-bold text-primary">{{ item.TrackingID }}</span>
+                      <span class="font-weight-bold" :class="isDarkTheme ? 'text-primary' : 'text-black'">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
                       <v-chip :color="getStatusColor(item.Status)" size="small" :class="['font-weight-bold', 'text-uppercase', 'px-3', item.Status === 'Visa en Día' ? 'text-black' : 'text-white']" variant="flat">
@@ -180,12 +179,9 @@
                       <span>{{ formatDate(item.CreatedAt) }}</span>
                     </template>
                     <template v-slot:item.AssignedToName="{ item }">
-                      <v-chip size="small" variant="tonal" :color="item.AssignedToName ? 'info' : 'grey'">
+                      <v-chip size="small" :variant="isDarkTheme ? 'tonal' : 'flat'" :color="item.AssignedToName ? (isDarkTheme ? 'info' : 'blue-lighten-4') : (isDarkTheme ? 'grey' : 'grey-lighten-3')" :class="!isDarkTheme ? 'text-black font-weight-bold' : ''">
                         {{ item.AssignedToName || 'En espera de asignación' }}
                       </v-chip>
-                    </template>
-                    <template v-slot:item.actions="{ item }">
-                      <v-btn icon="mdi-eye-outline" variant="text" color="primary" @click="viewTicketDetails(item)" title="Ver Detalles"></v-btn>
                     </template>
                   </v-data-table>
                 </v-window-item>
@@ -940,8 +936,7 @@ const headers = [
   { title: 'Asunto / Título', key: 'Subject' },
   { title: 'Fecha de Creación', key: 'CreatedAt' },
   { title: 'Estado del Caso', key: 'Status', align: 'center' },
-  { title: 'Ingeniero a cargo', key: 'AssignedToName', align: 'center' },
-  { title: 'Detalles', key: 'actions', sortable: false, align: 'center' },
+  { title: 'Ingeniero asignado', key: 'AssignedToName', align: 'center' },
 ]
 
 const tickets = ref([])
@@ -1021,8 +1016,7 @@ const headersAllTickets = [
   { title: 'Empresa', key: 'CompanyName' },
   { title: 'Fecha', key: 'CreatedAt' },
   { title: 'Estado', key: 'Status', align: 'center' },
-  { title: 'Ingeniero a cargo', key: 'AssignedToName', align: 'center' },
-  { title: 'Detalles', key: 'actions', sortable: false, align: 'center' },
+  { title: 'Ingeniero asignado', key: 'AssignedToName', align: 'center' },
 ]
 
 const companyUsers = ref([])
@@ -1777,13 +1771,34 @@ onMounted(() => {
   background: transparent !important;
 }
 .custom-table :deep(th) {
-  background: rgba(255,255,255,0.02) !important;
-  color: #90CAF9 !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  color: #000000 !important;
   font-weight: bold !important;
-  border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
 .custom-table :deep(td) {
-  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  color: #000000 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+.custom-table :deep(tbody tr) {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.custom-table :deep(tbody tr:hover) {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.bg-dark .custom-table :deep(th) {
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: #90CAF9 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.bg-dark .custom-table :deep(td) {
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+.bg-dark .custom-table :deep(tbody tr:hover) {
+  background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
 .premium-btn {

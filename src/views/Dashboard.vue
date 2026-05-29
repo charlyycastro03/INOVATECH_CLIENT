@@ -236,6 +236,38 @@
               <v-form ref="ticketForm" v-model="isFormValid">
                 <!-- Detalles Principales -->
                 <v-row>
+                  <!-- On Behalf Of (Admins/Inovatech) -->
+                  <v-col cols="12" sm="12" v-if="isAdminOrInovatech">
+                    <v-switch
+                      v-model="enableOnBehalfOf"
+                      label="Reportar en nombre de otra persona"
+                      color="primary"
+                      hide-details
+                      class="mb-2"
+                      @update:modelValue="!enableOnBehalfOf ? onBehalfOfSelected(null) : null"
+                    ></v-switch>
+                    <v-expand-transition>
+                      <v-autocomplete
+                        v-if="enableOnBehalfOf"
+                        v-model="newTicket.onBehalfOf"
+                        :items="autocompleteUsers"
+                        :custom-filter="filterUser"
+                        item-title="FullName"
+                        item-value="UserID"
+                        label="Selecciona la persona"
+                        placeholder="Busca por nombre o correo"
+                        variant="solo-filled"
+                        :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                        :disabled="formLoading"
+                        class="custom-input mb-0"
+                        return-object
+                        clearable
+                        @update:modelValue="onBehalfOfSelected"
+                        hide-details
+                      ></v-autocomplete>
+                    </v-expand-transition>
+                  </v-col>
+
                   <v-col cols="12" sm="8">
                     <v-text-field
                       v-model="newTicket.title"
@@ -270,7 +302,7 @@
                       </template>
                     </v-select>
                   </v-col>
-                  <v-col cols="12" sm="4">
+                  <v-col cols="12" sm="6">
                     <v-select
                       v-model="newTicket.priority"
                       :items="priorityOptions"
@@ -283,11 +315,22 @@
                       class="custom-input"
                     ></v-select>
                   </v-col>
-                  <v-col cols="12" sm="4">
+                  <v-col cols="12" sm="6">
                     <v-text-field
                       v-model="newTicket.contactPhone"
                       label="Teléfono de Contacto"
                       placeholder="Ej: +52 555 123 4567"
+                      variant="solo-filled"
+                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
+                      :disabled="formLoading"
+                      class="custom-input"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="4">
+                    <v-text-field
+                      v-model="newTicket.contactAddress"
+                      label="Dirección de Contacto"
+                      placeholder="Ej: Av. Principal 123"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                       :disabled="formLoading"
@@ -305,18 +348,7 @@
                       class="custom-input"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6">
-                    <v-text-field
-                      v-model="newTicket.contactAddress"
-                      label="Dirección de Contacto"
-                      placeholder="Ej: Av. Principal 123"
-                      variant="solo-filled"
-                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
-                      :disabled="formLoading"
-                      class="custom-input"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="6">
+                  <v-col cols="12" sm="4">
                     <v-text-field
                       v-model="newTicket.reference"
                       label="Referencia (Opcional)"
@@ -328,31 +360,11 @@
                       prepend-inner-icon="mdi-tag-outline"
                     ></v-text-field>
                   </v-col>
-                  <!-- On Behalf Of (Admins/Inovatech) -->
-                  <v-col cols="12" sm="12" v-if="isAdminOrInovatech">
-                    <v-autocomplete
-                      v-model="newTicket.onBehalfOf"
-                      :items="autocompleteUsers"
-                      :custom-filter="filterUser"
-                      item-title="FullName"
-                      item-value="UserID"
-                      label="Reportar en nombre de (Opcional)"
-                      placeholder="Busca por nombre o correo"
-                      variant="solo-filled"
-                      :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
-                      :disabled="formLoading"
-                      class="custom-input mb-0"
-                      return-object
-                      clearable
-                      @update:modelValue="onBehalfOfSelected"
-                      hide-details
-                    ></v-autocomplete>
-                  </v-col>
 
                   <v-col cols="12" sm="4">
                     <v-text-field
                       v-model="newTicket.brand"
-                      label="Marca (Ej: Dell)"
+                      label="Marca"
                       placeholder="Opcional"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
@@ -363,7 +375,7 @@
                   <v-col cols="12" sm="4">
                     <v-text-field
                       v-model="newTicket.model"
-                      label="Modelo (Ej: Latitude)"
+                      label="Modelo"
                       placeholder="Opcional"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
@@ -374,7 +386,7 @@
                   <v-col cols="12" sm="4">
                     <v-text-field
                       v-model="newTicket.serialNumber"
-                      label="No. de Serie (Opcional)"
+                      label="No. de Serie"
                       placeholder="Opcional"
                       variant="solo-filled"
                       :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
@@ -1152,6 +1164,7 @@ const newTicket = ref({
 })
 
 const enableAssetPlate = ref(false)
+const enableOnBehalfOf = ref(false)
 
 const categories = ref([])
 

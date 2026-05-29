@@ -566,7 +566,15 @@
                     >
                       {{ eng.FullName }}
                     </v-chip>
-                    <span v-if="ticketAssignees.length === 0" class="text-caption text-grey">En Cola</span>
+                    <v-chip
+                      v-if="ticketAssignees.length === 0 && selectedTicket.AssignedEngineerName"
+                      size="small"
+                      color="primary"
+                      variant="flat"
+                    >
+                      {{ selectedTicket.AssignedEngineerName }}
+                    </v-chip>
+                    <span v-if="ticketAssignees.length === 0 && !selectedTicket.AssignedEngineerName" class="text-caption text-grey">En Cola</span>
                     <v-btn
                       v-if="isAdminOrInovatech"
                       icon="mdi-plus"
@@ -691,7 +699,6 @@
                   :disabled="replyLoading"
                   class="mr-2 w-100 custom-input"
                 ></v-textarea>
-                <div class="d-flex flex-column gap-2">
                   <v-btn
                     v-if="isAdminOrInovatech"
                     color="info"
@@ -701,16 +708,51 @@
                     title="Respuestas Automáticas"
                     @click="fetchCannedResponses"
                   ></v-btn>
+                  
+                  <v-btn
+                    color="info"
+                    icon="mdi-paperclip"
+                    size="small"
+                    class="rounded-lg premium-btn"
+                    title="Adjuntar Archivo"
+                    @click="triggerReplyFileInput"
+                  ></v-btn>
+                  <input
+                    type="file"
+                    id="replyFileInput"
+                    class="d-none"
+                    multiple
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.zip"
+                    @change="onReplyFilesSelected"
+                  />
+                  
                   <v-btn
                     color="primary"
                     icon="mdi-send"
                     size="large"
                     class="rounded-lg premium-btn"
                     :loading="replyLoading"
-                    :disabled="!replyText.trim()"
+                    :disabled="!replyText.trim() && replyFiles.length === 0"
                     @click="submitReply"
                   ></v-btn>
                 </div>
+              </div>
+              
+              <!-- Archivos Adjuntos de Respuesta -->
+              <div v-if="replyFiles.length > 0" class="w-100 d-flex flex-wrap gap-2 mt-2 px-2">
+                <v-chip
+                  v-for="(file, index) in replyFiles"
+                  :key="index"
+                  closable
+                  size="small"
+                  color="primary"
+                  variant="flat"
+                  @click:close="removeReplyFile(index)"
+                >
+                  <v-icon start size="small">mdi-file</v-icon>
+                  {{ file.name }} ({{ file.size }})
+                </v-chip>
+              </div>
               </div>
             </v-card-actions>
             <v-card-actions class="pa-4 justify-center" :style="{ background: isDarkTheme ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }" v-else>
@@ -1187,6 +1229,28 @@ const selectedTicket = ref(null)
 const ticketMessages = ref([])
 const ticketAttachments = ref([])
 const replyText = ref('')
+const replyFiles = ref([])
+
+const triggerReplyFileInput = () => {
+  const fileInput = document.getElementById('replyFileInput')
+  if (fileInput) fileInput.click()
+}
+
+const onReplyFilesSelected = (e) => {
+  if (e.target.files) {
+    Array.from(e.target.files).forEach(file => {
+      replyFiles.value.push({
+        file,
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+      })
+    })
+  }
+}
+
+const removeReplyFile = (index) => {
+  replyFiles.value.splice(index, 1)
+}
 const replyLoading = ref(false)
 
 // Configuración de Estados — colores exactos del MASTER_SCRIPT
@@ -1567,6 +1631,7 @@ const viewTicketDetails = async (ticket) => {
   ticketMessages.value = []
   ticketAttachments.value = []
   replyText.value = ''
+  replyFiles.value = []
   
   try {
     const response = await api.get(`/api/client/tickets/${ticket.TicketID}`)
@@ -1586,18 +1651,31 @@ const viewTicketDetails = async (ticket) => {
 
 // Responder a un Ticket
 const submitReply = async () => {
-  if (!replyText.value.trim() || !selectedTicket.value) return
+  if (!replyText.value.trim() && replyFiles.value.length === 0) return
+  if (!selectedTicket.value) return
+  
   replyLoading.value = true
   try {
     const ticketId = selectedTicket.value.TicketID
-    await api.post(`/api/client/tickets/${ticketId}/reply`, {
-      message: replyText.value
+    const formData = new FormData()
+    formData.append('message', replyText.value || 'Archivo adjunto')
+    
+    replyFiles.value.forEach(f => {
+      formData.append('photo', f.file)
+    })
+
+    await api.post(`/api/client/tickets/${ticketId}/reply`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     })
     
     // Recargar historial del ticket
     const response = await api.get(`/api/client/tickets/${ticketId}`)
     ticketMessages.value = response.data.messages
+    ticketAttachments.value = response.data.attachments || ticketAttachments.value
     replyText.value = ''
+    replyFiles.value = []
   } catch (error) {
     console.error('Error al responder ticket:', error)
   } finally {

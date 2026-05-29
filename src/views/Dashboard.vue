@@ -699,6 +699,7 @@
                   :disabled="replyLoading"
                   class="mr-2 w-100 custom-input"
                 ></v-textarea>
+                <div class="d-flex flex-column gap-2">
                   <v-btn
                     v-if="isAdminOrInovatech"
                     color="info"
@@ -737,7 +738,6 @@
                   ></v-btn>
                 </div>
               </div>
-              
               <!-- Archivos Adjuntos de Respuesta -->
               <div v-if="replyFiles.length > 0" class="w-100 d-flex flex-wrap gap-2 mt-2 px-2">
                 <v-chip
@@ -752,7 +752,6 @@
                   <v-icon start size="small">mdi-file</v-icon>
                   {{ file.name }} ({{ file.size }})
                 </v-chip>
-              </div>
               </div>
             </v-card-actions>
             <v-card-actions class="pa-4 justify-center" :style="{ background: isDarkTheme ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }" v-else>

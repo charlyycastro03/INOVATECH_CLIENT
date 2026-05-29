@@ -1830,4 +1830,21 @@ onMounted(() => {
 .glass-expansion :deep(.v-expansion-panel-title) {
   padding: 12px 16px;
 }
+
+/* Forzar textos grises a negro puro en modo claro */
+.text-grey,
+.text-grey-lighten-1,
+.text-grey-lighten-2 {
+  color: #000000 !important;
+}
+
+.bg-dark .text-grey {
+  color: #9e9e9e !important;
+}
+.bg-dark .text-grey-lighten-1 {
+  color: #bdbdbd !important;
+}
+.bg-dark .text-grey-lighten-2 {
+  color: #e0e0e0 !important;
+}
 </style>

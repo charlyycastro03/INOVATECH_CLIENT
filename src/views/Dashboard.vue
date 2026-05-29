@@ -548,8 +548,8 @@
                 </v-col>
                 <v-col cols="12" sm="6" md="3" class="py-1" v-if="selectedTicket.Status === 'Resolved' || selectedTicket.Status === 'Closed'">
                   <div class="text-caption text-grey-lighten-1">Resuelto Por</div>
-                  <div class="font-weight-bold text-success text-truncate">
-                    {{ selectedTicket.ResolvedByUserName || 'Staff' }}
+                  <div class="font-weight-bold text-success text-truncate" :title="selectedTicket.ResolvedByUserName || selectedTicket.AssignedEngineerName || 'Soporte Técnico'">
+                    {{ selectedTicket.ResolvedByUserName || selectedTicket.AssignedEngineerName || 'Soporte Técnico' }}
                   </div>
                 </v-col>
                 <v-col cols="12" sm="6" md="3" class="py-1" v-else>
@@ -657,10 +657,10 @@
                   <div class="d-flex align-center mb-1">
                     <v-avatar :color="msg.UserID === selectedTicket.UserID ? 'primary' : 'secondary'" size="28" class="mr-2">
                       <span class="text-white text-caption font-weight-bold">
-                        {{ msg.SenderName ? msg.SenderName.substring(0, 2).toUpperCase() : 'ST' }}
+                        {{ msg.SenderName ? msg.SenderName.substring(0, 2).toUpperCase() : (selectedTicket.AssignedEngineerName ? selectedTicket.AssignedEngineerName.substring(0, 2).toUpperCase() : 'ST') }}
                       </span>
                     </v-avatar>
-                    <strong class="text-caption font-weight-bold">{{ msg.SenderName || 'Soporte Técnico' }}</strong>
+                    <strong class="text-caption font-weight-bold">{{ msg.SenderName || selectedTicket.AssignedEngineerName || 'Soporte Técnico' }}</strong>
                     <span class="text-caption text-grey-lighten-1 ml-3">{{ formatDate(msg.CreatedAt) }}</span>
                   </div>
                   

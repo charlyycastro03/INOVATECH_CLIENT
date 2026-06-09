@@ -138,7 +138,8 @@
                     @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <span class="font-weight-bold" :class="isDarkTheme ? 'text-primary' : 'text-black'">{{ item.TrackingID }}</span>
+                      <v-badge :model-value="isUnread(item)" color="error" dot inline class="mr-1"></v-badge>
+                      <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6' : '']">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
                       <v-chip :color="getStatusColor(item.Status)" size="small" class="font-weight-bold text-uppercase px-3" variant="flat">
@@ -168,7 +169,8 @@
                     @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <span class="font-weight-bold" :class="isDarkTheme ? 'text-primary' : 'text-black'">{{ item.TrackingID }}</span>
+                      <v-badge :model-value="isUnread(item)" color="error" dot inline class="mr-1"></v-badge>
+                      <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6' : '']">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
                       <v-chip :color="getStatusColor(item.Status)" size="small" :class="['font-weight-bold', 'text-uppercase', 'px-3', item.Status === 'Visa en Día' ? 'text-black' : 'text-white']" variant="flat">
@@ -1259,6 +1261,23 @@ const formatDate = (dateString) => {
   })
 }
 
+// Sistema de notificaciones de tickets no leídos
+const isUnread = (ticket) => {
+  if (!ticket || !ticket.TicketID || !ticket.UpdatedAt) return false;
+  const lastSeenStr = localStorage.getItem('ticket_last_seen');
+  const lastSeen = lastSeenStr ? JSON.parse(lastSeenStr) : {};
+  if (!lastSeen[ticket.TicketID]) return true; // Nunca lo ha abierto en este navegador
+  return new Date(ticket.UpdatedAt) > new Date(lastSeen[ticket.TicketID]);
+}
+
+const markAsRead = (ticket) => {
+  if (!ticket || !ticket.TicketID) return;
+  const lastSeenStr = localStorage.getItem('ticket_last_seen');
+  const lastSeen = lastSeenStr ? JSON.parse(lastSeenStr) : {};
+  lastSeen[ticket.TicketID] = new Date().toISOString(); // Guardamos el momento de vista
+  localStorage.setItem('ticket_last_seen', JSON.stringify(lastSeen));
+}
+
 // Carga de Tickets desde API
 const fetchTickets = async (isBackground = false) => {
   if (!isBackground) loading.value = true
@@ -1609,6 +1628,7 @@ const applyCannedResponse = (bodyTemplate) => {
 
 const viewTicketDetails = async (ticket, isBackground = false) => {
   if (!isBackground) {
+    markAsRead(ticket)
     selectedTicket.value = ticket
     detailsDialog.value = true
     ticketMessages.value = []

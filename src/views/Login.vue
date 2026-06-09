@@ -120,7 +120,9 @@
                   <v-icon start icon="mdi-refresh" v-if="countdown === 0"></v-icon>
                   {{ countdown > 0 ? `Reenviar código en ${countdown}s` : 'Reenviar nuevo código' }}
                 </v-btn>
-                <div v-if="resendCount >= 2" class="text-caption text-red-lighten-2 mt-1">Has alcanzado el límite de reenvíos permitidos.</div>
+                <div v-if="resendCount >= 2" class="text-caption text-red-lighten-2 mt-2 font-weight-bold">
+                  ⚠️ Límite de reenvíos alcanzado. Intenta más tarde o en otro momento.
+                </div>
               </div>
             </v-form>
           </div>

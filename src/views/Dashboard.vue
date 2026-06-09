@@ -1272,14 +1272,14 @@ const isUnread = (ticket) => {
   const lastSeenStr = localStorage.getItem('ticket_last_seen');
   const lastSeen = lastSeenStr ? JSON.parse(lastSeenStr) : {};
   if (!lastSeen[ticket.TicketID]) return true;
-  return new Date(ticket.UpdatedAt) > new Date(lastSeen[ticket.TicketID]);
+  return ticket.UpdatedAt !== lastSeen[ticket.TicketID];
 }
 
 const markAsRead = (ticket) => {
   if (!ticket || !ticket.TicketID) return;
   const lastSeenStr = localStorage.getItem('ticket_last_seen');
   const lastSeen = lastSeenStr ? JSON.parse(lastSeenStr) : {};
-  lastSeen[ticket.TicketID] = new Date().toISOString(); // Guardamos el momento de vista
+  lastSeen[ticket.TicketID] = ticket.UpdatedAt || new Date().toISOString();
   localStorage.setItem('ticket_last_seen', JSON.stringify(lastSeen));
 }
 

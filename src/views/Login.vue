@@ -114,6 +114,14 @@
               <v-btn block color="primary" size="x-large" variant="elevated" :loading="loading" @click="verifyLogin" class="premium-btn mt-4">
                 Verificar e Ingresar <v-icon end icon="mdi-login-variant"></v-icon>
               </v-btn>
+
+              <div class="text-center mt-6">
+                <v-btn variant="text" size="small" color="blue-lighten-3" @click="resendCode" :disabled="resendCount >= 2 || countdown > 0 || loading" class="text-none font-weight-bold">
+                  <v-icon start icon="mdi-refresh" v-if="countdown === 0"></v-icon>
+                  {{ countdown > 0 ? `Reenviar código en ${countdown}s` : 'Reenviar nuevo código' }}
+                </v-btn>
+                <div v-if="resendCount >= 2" class="text-caption text-red-lighten-2 mt-1">Has alcanzado el límite de reenvíos permitidos.</div>
+              </div>
             </v-form>
           </div>
 
@@ -124,7 +132,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../plugins/axios'
 
@@ -136,6 +144,23 @@ const step = ref(1)
 const loading = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
+
+const countdown = ref(0)
+const resendCount = ref(0)
+let timer = null
+
+const startCountdown = () => {
+  countdown.value = 60
+  if (timer) clearInterval(timer)
+  timer = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) clearInterval(timer)
+  }, 1000)
+}
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 
 const regForm = ref({
   fullName: '',
@@ -161,6 +186,8 @@ const requestLogin = async () => {
     const response = await api.post('/api/auth/login-request', { email: email.value })
     successMsg.value = response.data.msg || 'Código enviado con éxito. Revisa tu correo.'
     step.value = 2
+    resendCount.value = 0
+    startCountdown()
   } catch (error) {
     console.error('Error al solicitar login:', error)
     errorMsg.value = error.response?.data?.msg || 'Error de conexión. Inténtalo de nuevo.'
@@ -183,9 +210,32 @@ const registerAccount = async () => {
     const response = await api.post('/api/auth/register', regForm.value)
     successMsg.value = response.data.msg || 'Cuenta creada. Revisa tu correo para el código OTP.'
     step.value = 2
+    resendCount.value = 0
+    startCountdown()
   } catch (error) {
     console.error('Error al registrar cuenta:', error)
     errorMsg.value = error.response?.data?.msg || 'Error al crear la cuenta.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const resendCode = async () => {
+  if (resendCount.value >= 2 || countdown.value > 0) return
+  
+  loading.value = true
+  errorMsg.value = ''
+  successMsg.value = ''
+  
+  try {
+    const currentEmail = tab.value === 'register' ? regForm.value.email : email.value
+    await api.post('/api/auth/login-request', { email: currentEmail })
+    successMsg.value = 'Nuevo código enviado con éxito. Revisa tu correo.'
+    resendCount.value++
+    startCountdown()
+  } catch (error) {
+    console.error('Error al reenviar código:', error)
+    errorMsg.value = error.response?.data?.msg || 'Error al reenviar el código.'
   } finally {
     loading.value = false
   }

@@ -1270,7 +1270,10 @@ const isUnread = (ticket) => {
   if (!ticket || !ticket.TicketID || !ticket.UpdatedAt) return false;
   const lastSeenStr = localStorage.getItem('ticket_last_seen');
   const lastSeen = lastSeenStr ? JSON.parse(lastSeenStr) : {};
-  if (!lastSeen[ticket.TicketID]) return false; // Por defecto no mostrar si nunca lo ha abierto
+  if (!lastSeen[ticket.TicketID]) {
+    if (!ticket.CreatedAt) return true;
+    return new Date(ticket.UpdatedAt).getTime() - new Date(ticket.CreatedAt).getTime() > 1000;
+  }
   return new Date(ticket.UpdatedAt) > new Date(lastSeen[ticket.TicketID]);
 }
 

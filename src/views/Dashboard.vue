@@ -138,8 +138,10 @@
                     @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">1</div>
-                      <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6 text-error' : '']">{{ item.TrackingID }}</span>
+                      <div class="position-relative d-flex align-center h-100 w-100" style="min-width: 90px; padding: 4px;">
+                        <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">1</div>
+                        <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6 text-error' : '']">{{ item.TrackingID }}</span>
+                      </div>
                     </template>
                     <template v-slot:item.Status="{ item }">
                       <v-chip :color="getStatusColor(item.Status)" size="small" class="font-weight-bold text-uppercase px-3" variant="flat">
@@ -169,8 +171,10 @@
                     @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">1</div>
-                      <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6 text-error' : '']">{{ item.TrackingID }}</span>
+                      <div class="position-relative d-flex align-center h-100 w-100" style="min-width: 90px; padding: 4px;">
+                        <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">1</div>
+                        <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6 text-error' : '']">{{ item.TrackingID }}</span>
+                      </div>
                     </template>
                     <template v-slot:item.Status="{ item }">
                       <v-chip :color="getStatusColor(item.Status)" size="small" :class="['font-weight-bold', 'text-uppercase', 'px-3', item.Status === 'Visa en Día' ? 'text-black' : 'text-white']" variant="flat">
@@ -1266,7 +1270,7 @@ const isUnread = (ticket) => {
   if (!ticket || !ticket.TicketID || !ticket.UpdatedAt) return false;
   const lastSeenStr = localStorage.getItem('ticket_last_seen');
   const lastSeen = lastSeenStr ? JSON.parse(lastSeenStr) : {};
-  if (!lastSeen[ticket.TicketID]) return true; // Nunca lo ha abierto en este navegador
+  if (!lastSeen[ticket.TicketID]) return false; // Por defecto no mostrar si nunca lo ha abierto
   return new Date(ticket.UpdatedAt) > new Date(lastSeen[ticket.TicketID]);
 }
 

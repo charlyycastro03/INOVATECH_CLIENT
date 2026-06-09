@@ -1352,7 +1352,8 @@ const submitTicket = async () => {
     fetchTickets()
   } catch (error) {
     console.error('Error al crear ticket:', error)
-    globalMsg.value = error.response?.data?.message || 'Error al procesar el ticket.'
+    const serverMsg = error.response?.data?.message
+    globalMsg.value = serverMsg || 'Error al procesar el ticket. Intenta de nuevo o contacta a soporte.'
     globalMsgType.value = 'error'
   } finally {
     formLoading.value = false

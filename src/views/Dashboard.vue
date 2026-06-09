@@ -8,7 +8,7 @@
         </v-avatar>
         <div>
           <div class="text-subtitle-1 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-black'">Portal de Soporte</div>
-          <div class="text-caption text-grey-lighten-1">{{ clientName }} ({{ clientEmail }})</div>
+          <div class="text-caption font-weight-medium" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-2'" style="opacity: 0.9;">{{ clientName }} ({{ clientEmail }})</div>
         </div>
       </div>
       <v-spacer></v-spacer>

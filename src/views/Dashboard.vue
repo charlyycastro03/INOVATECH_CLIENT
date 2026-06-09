@@ -1260,17 +1260,19 @@ const formatDate = (dateString) => {
 }
 
 // Carga de Tickets desde API
-const fetchTickets = async () => {
-  loading.value = true
+const fetchTickets = async (isBackground = false) => {
+  if (!isBackground) loading.value = true
   try {
     const response = await api.get('/api/client/tickets')
     tickets.value = response.data
   } catch (error) {
-    console.error('Error al cargar tickets:', error)
-    globalMsg.value = 'No se pudieron cargar tus tickets. Revisa tu conexión.'
-    globalMsgType.value = 'error'
+    if (!isBackground) {
+      console.error('Error al cargar tickets:', error)
+      globalMsg.value = 'No se pudieron cargar tus tickets. Revisa tu conexión.'
+      globalMsgType.value = 'error'
+    }
   } finally {
-    loading.value = false
+    if (!isBackground) loading.value = false
   }
 }
 
@@ -1362,16 +1364,16 @@ const submitTicket = async () => {
   }
 }
 
-const fetchAllTickets = async () => {
+const fetchAllTickets = async (isBackground = false) => {
   if (!isAdminOrInovatech.value) return;
-  loadingAllTickets.value = true
+  if (!isBackground) loadingAllTickets.value = true
   try {
     const response = await api.get('/api/client/all-tickets')
     allTickets.value = response.data
   } catch (e) {
-    console.error(e)
+    if (!isBackground) console.error(e)
   } finally {
-    loadingAllTickets.value = false
+    if (!isBackground) loadingAllTickets.value = false
   }
 }
 
@@ -1605,27 +1607,31 @@ const applyCannedResponse = (bodyTemplate) => {
   cannedResponseDialog.value = false
 }
 
-const viewTicketDetails = async (ticket) => {
-  selectedTicket.value = ticket
-  detailsDialog.value = true
-  ticketMessages.value = []
-  ticketAttachments.value = []
-  replyText.value = ''
-  replyFiles.value = []
+const viewTicketDetails = async (ticket, isBackground = false) => {
+  if (!isBackground) {
+    selectedTicket.value = ticket
+    detailsDialog.value = true
+    ticketMessages.value = []
+    ticketAttachments.value = []
+    replyText.value = ''
+    replyFiles.value = []
+  }
   
   try {
     const response = await api.get(`/api/client/tickets/${ticket.TicketID}`)
     const data = response.data
     selectedTicket.value = data.ticket
-    ticketMessages.value = data.messages || []
-    ticketAttachments.value = data.attachments || []
-    detailsDialog.value = true
+    // Solo sobreescribir si estamos viendo el ticket
+    if (detailsDialog.value) {
+      ticketMessages.value = data.messages || []
+      ticketAttachments.value = data.attachments || ticketAttachments.value
+    }
     
-    if (isAdminOrInovatech.value) {
+    if (isAdminOrInovatech.value && !isBackground) {
       await fetchAssignees(ticket.TicketID)
     }
   } catch (error) {
-    console.error('Error al cargar el detalle del ticket:', error)
+    if (!isBackground) console.error('Error al cargar el detalle del ticket:', error)
   }
 }
 
@@ -1671,6 +1677,8 @@ const logout = () => {
 }
 
 // Inicialización
+let pollingInterval = null;
+
 onMounted(() => {
   const savedTheme = localStorage.getItem('portal_theme')
   if (savedTheme) {
@@ -1706,6 +1714,22 @@ onMounted(() => {
     fetchCompanyUsers()
     fetchAutocompleteUsers()
   }
+
+  // Polling automático cada 10 segundos
+  pollingInterval = setInterval(() => {
+    if (activeTab.value === 'my_tickets') fetchTickets(true)
+    if (activeTab.value === 'all_tickets' && isAdminOrInovatech.value) fetchAllTickets(true)
+    
+    if (detailsDialog.value && selectedTicket.value) {
+      viewTicketDetails(selectedTicket.value, true)
+    }
+  }, 10000)
+})
+
+import { onUnmounted } from 'vue'
+
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval)
 })
 </script>
 

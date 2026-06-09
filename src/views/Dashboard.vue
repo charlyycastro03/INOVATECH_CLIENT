@@ -138,8 +138,8 @@
                     @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <v-badge :model-value="isUnread(item)" content="1" color="error" inline class="mr-2 pulse-badge"></v-badge>
-                      <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6' : '']">{{ item.TrackingID }}</span>
+                      <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">1</div>
+                      <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6 text-error' : '']">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
                       <v-chip :color="getStatusColor(item.Status)" size="small" class="font-weight-bold text-uppercase px-3" variant="flat">
@@ -169,8 +169,8 @@
                     @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <v-badge :model-value="isUnread(item)" content="1" color="error" inline class="mr-2 pulse-badge"></v-badge>
-                      <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6' : '']">{{ item.TrackingID }}</span>
+                      <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">1</div>
+                      <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6 text-error' : '']">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
                       <v-chip :color="getStatusColor(item.Status)" size="small" :class="['font-weight-bold', 'text-uppercase', 'px-3', item.Status === 'Visa en Día' ? 'text-black' : 'text-white']" variant="flat">
@@ -1777,12 +1777,40 @@ onUnmounted(() => {
   -webkit-text-fill-color: transparent;
 }
 
-.pulse-badge :deep(.v-badge__badge) {
+.pulse-badge {
   animation: pulse-red 2s infinite;
+}
+
+.unread-floating-bubble {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #f44336;
+  color: white;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  z-index: 10;
   box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
-  font-size: 0.75rem;
-  height: 20px;
-  min-width: 20px;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .unread-floating-bubble {
+    top: -5px;
+    right: -5px;
+    transform: none;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    z-index: 99;
+  }
 }
 
 @keyframes pulse-red {

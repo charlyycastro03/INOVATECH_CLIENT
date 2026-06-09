@@ -1639,6 +1639,10 @@ const viewTicketDetails = async (ticket, isBackground = false) => {
     ticketAttachments.value = []
     replyText.value = ''
     replyFiles.value = []
+  } else {
+    if (detailsDialog.value && selectedTicket.value && selectedTicket.value.TicketID === ticket.TicketID) {
+      markAsRead(ticket)
+    }
   }
   
   try {
@@ -1739,7 +1743,7 @@ onMounted(() => {
     fetchAutocompleteUsers()
   }
 
-  // Polling automático cada 10 segundos
+  // Polling automático cada 3 segundos para que se sienta en tiempo real
   pollingInterval = setInterval(() => {
     if (activeTab.value === 'my_tickets') fetchTickets(true)
     if (activeTab.value === 'all_tickets' && isAdminOrInovatech.value) fetchAllTickets(true)
@@ -1747,7 +1751,7 @@ onMounted(() => {
     if (detailsDialog.value && selectedTicket.value) {
       viewTicketDetails(selectedTicket.value, true)
     }
-  }, 10000)
+  }, 3000)
 })
 
 import { onUnmounted } from 'vue'

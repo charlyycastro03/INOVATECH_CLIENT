@@ -138,7 +138,7 @@
                     @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <v-badge :model-value="isUnread(item)" color="error" dot inline class="mr-1"></v-badge>
+                      <v-badge :model-value="isUnread(item)" content="1" color="error" inline class="mr-2 pulse-badge"></v-badge>
                       <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6' : '']">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
@@ -169,7 +169,7 @@
                     @click:row="(event, { item }) => viewTicketDetails(item)"
                   >
                     <template v-slot:item.TrackingID="{ item }">
-                      <v-badge :model-value="isUnread(item)" color="error" dot inline class="mr-1"></v-badge>
+                      <v-badge :model-value="isUnread(item)" content="1" color="error" inline class="mr-2 pulse-badge"></v-badge>
                       <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6' : '']">{{ item.TrackingID }}</span>
                     </template>
                     <template v-slot:item.Status="{ item }">
@@ -1772,10 +1772,32 @@ onUnmounted(() => {
 }
 
 .gradient-text {
-  background: linear-gradient(45deg, #1e3a8a, #2563eb, #3b82f6);
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
+}
+
+.pulse-badge :deep(.v-badge__badge) {
+  animation: pulse-red 2s infinite;
+  box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  font-size: 0.75rem;
+  height: 20px;
+  min-width: 20px;
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(244, 67, 54, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
 }
 
 .bg-dark .gradient-text {

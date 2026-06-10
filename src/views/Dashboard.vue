@@ -656,10 +656,10 @@
                 <div
                   v-for="msg in ticketMessages"
                   :key="msg.ReplyID"
-                  :class="['d-flex flex-column mb-4', msg.UserID === selectedTicket.UserID ? 'align-start' : 'align-end']"
+                  :class="['d-flex flex-column mb-4', msg.UserID === selectedTicket.UserID ? 'align-end' : 'align-start']"
                 >
                   <div class="d-flex align-center mb-1">
-                    <v-avatar :color="msg.UserID === selectedTicket.UserID ? 'primary' : 'secondary'" size="28" class="mr-2">
+                    <v-avatar :color="msg.UserID === selectedTicket.UserID ? 'secondary' : 'primary'" size="28" class="mr-2">
                       <span class="text-white text-caption font-weight-bold">
                         {{ msg.SenderName ? msg.SenderName.substring(0, 2).toUpperCase() : (selectedTicket.AssignedEngineerName ? selectedTicket.AssignedEngineerName.substring(0, 2).toUpperCase() : 'ST') }}
                       </span>
@@ -669,7 +669,7 @@
                   </div>
                   
                   <v-card
-                    :color="msg.UserID === selectedTicket.UserID ? (isDarkTheme ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'rgba(33,150,243,0.15)'"
+                    :color="msg.UserID === selectedTicket.UserID ? 'rgba(33,150,243,0.15)' : (isDarkTheme ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')"
                     flat
                     class="pa-3 rounded-lg border border-opacity-10"
                     style="max-width: 85%;"
@@ -694,6 +694,9 @@
                   hide-details
                   :disabled="replyLoading"
                   class="mr-2 w-100 custom-input"
+                  @keydown.enter.exact.prevent="submitReply"
+                  @dragover.prevent
+                  @drop.prevent="onDropFiles"
                 ></v-textarea>
                 <div class="d-flex flex-column gap-2">
                   <v-btn
@@ -1224,6 +1227,18 @@ const triggerReplyFileInput = () => {
 const onReplyFilesSelected = (e) => {
   if (e.target.files) {
     Array.from(e.target.files).forEach(file => {
+      replyFiles.value.push({
+        file,
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+      })
+    })
+  }
+}
+
+const onDropFiles = (e) => {
+  if (e.dataTransfer && e.dataTransfer.files) {
+    Array.from(e.dataTransfer.files).forEach(file => {
       replyFiles.value.push({
         file,
         name: file.name,

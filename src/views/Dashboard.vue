@@ -683,11 +683,27 @@
             <v-divider class="border-opacity-25" :color="isDarkTheme ? 'white' : 'black'"></v-divider>
 
             <!-- Campo para Agregar Respuesta -->
-            <v-card-actions class="pa-4 d-flex flex-column" v-if="selectedTicket.Status !== 'Closed' && selectedTicket.Status !== 'Resolved'">
-              <div class="w-100 d-flex align-end">
+            <v-card-actions class="pa-4 d-flex flex-column position-relative" v-if="selectedTicket.Status !== 'Closed' && selectedTicket.Status !== 'Resolved'">
+              <!-- Dropzone Overlay -->
+              <div
+                v-if="isDraggingOver"
+                class="dropzone-overlay"
+                @dragenter.prevent
+                @dragover.prevent
+                @dragleave.prevent="isDraggingOver = false"
+                @drop.prevent="onDropFiles"
+              >
+                <v-icon size="48" color="primary">mdi-cloud-upload</v-icon>
+                <div class="text-h6 font-weight-bold text-primary mt-2">Suelta los archivos aquí</div>
+              </div>
+
+              <div
+                class="w-100 d-flex align-end"
+                @dragenter.prevent="isDraggingOver = true"
+              >
                 <v-textarea
                   v-model="replyText"
-                  label="Escribe tu respuesta..."
+                  label="Escribe una respuesta o arrastra un archivo..."
                   variant="solo-filled"
                   :bg-color="isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'"
                   rows="2"
@@ -695,8 +711,6 @@
                   :disabled="replyLoading"
                   class="mr-2 w-100 custom-input"
                   @keydown.enter.exact.prevent="submitReply"
-                  @dragover.prevent
-                  @drop.prevent="onDropFiles"
                 ></v-textarea>
                 <div class="d-flex flex-column gap-2">
                   <v-btn
@@ -1218,6 +1232,7 @@ const ticketMessages = ref([])
 const ticketAttachments = ref([])
 const replyText = ref('')
 const replyFiles = ref([])
+const isDraggingOver = ref(false)
 
 const triggerReplyFileInput = () => {
   const fileInput = document.getElementById('replyFileInput')
@@ -1227,23 +1242,30 @@ const triggerReplyFileInput = () => {
 const onReplyFilesSelected = (e) => {
   if (e.target.files) {
     Array.from(e.target.files).forEach(file => {
-      replyFiles.value.push({
-        file,
-        name: file.name,
-        size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
-      })
+      const exists = replyFiles.value.some(f => f.name === file.name && f.file.size === file.size)
+      if (!exists) {
+        replyFiles.value.push({
+          file,
+          name: file.name,
+          size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+        })
+      }
     })
   }
 }
 
 const onDropFiles = (e) => {
+  isDraggingOver.value = false;
   if (e.dataTransfer && e.dataTransfer.files) {
     Array.from(e.dataTransfer.files).forEach(file => {
-      replyFiles.value.push({
-        file,
-        name: file.name,
-        size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
-      })
+      const exists = replyFiles.value.some(f => f.name === file.name && f.file.size === file.size)
+      if (!exists) {
+        replyFiles.value.push({
+          file,
+          name: file.name,
+          size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+        })
+      }
     })
   }
 }
@@ -1802,7 +1824,24 @@ onUnmounted(() => {
 }
 
 .pulse-badge {
-  animation: pulse-red 2s infinite;
+  animation: pulse-badge-animation 1.5s infinite;
+}
+
+.dropzone-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(33, 150, 243, 0.1);
+  backdrop-filter: blur(4px);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #2196F3;
+  border-radius: 8px;
 }
 
 .unread-floating-bubble {

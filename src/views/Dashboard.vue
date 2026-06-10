@@ -1697,7 +1697,16 @@ const viewTicketDetails = async (ticket, isBackground = false) => {
       await fetchAssignees(ticket.TicketID)
     }
   } catch (error) {
-    if (!isBackground) console.error('Error al cargar el detalle del ticket:', error)
+    if (error.response && error.response.status === 404) {
+      detailsDialog.value = false
+      selectedTicket.value = null
+      globalMsg.value = 'Este ticket ha sido eliminado o ya no está disponible.'
+      globalMsgType.value = 'warning'
+      fetchTickets()
+      if (activeTab.value === 'all_tickets') fetchAllTickets()
+    } else if (!isBackground) {
+      console.error('Error al cargar el detalle del ticket:', error)
+    }
   }
 }
 
@@ -1726,6 +1735,18 @@ const submitReply = async () => {
     const response = await api.get(`/api/client/tickets/${ticketId}`)
     ticketMessages.value = response.data.messages
     ticketAttachments.value = response.data.attachments || ticketAttachments.value
+    selectedTicket.value = response.data.ticket
+    
+    // Update the ticket in the local arrays to reflect status changes immediately
+    const ticketInList = tickets.value.find(t => t.TicketID === ticketId)
+    if (ticketInList) {
+      ticketInList.Status = response.data.ticket.Status
+    }
+    const allTicketInList = allCompanyTickets.value.find(t => t.TicketID === ticketId)
+    if (allTicketInList) {
+      allTicketInList.Status = response.data.ticket.Status
+    }
+    
     replyText.value = ''
     replyFiles.value = []
   } catch (error) {

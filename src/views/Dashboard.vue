@@ -139,7 +139,7 @@
                   >
                     <template v-slot:item.TrackingID="{ item }">
                       <div class="position-relative d-flex align-center h-100 w-100" style="min-width: 90px; padding: 4px;">
-                        <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">1</div>
+                        <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">{{ item.unread_count }}</div>
                         <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6 text-error' : '']">{{ item.TrackingID }}</span>
                       </div>
                     </template>
@@ -172,7 +172,7 @@
                   >
                     <template v-slot:item.TrackingID="{ item }">
                       <div class="position-relative d-flex align-center h-100 w-100" style="min-width: 90px; padding: 4px;">
-                        <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">1</div>
+                        <div v-if="isUnread(item)" class="unread-floating-bubble pulse-badge">{{ item.unread_count }}</div>
                         <span class="font-weight-bold" :class="[isDarkTheme ? 'text-primary' : 'text-black', isUnread(item) ? 'text-h6 text-error' : '']">{{ item.TrackingID }}</span>
                       </div>
                     </template>
@@ -1268,19 +1268,19 @@ const formatDate = (dateString) => {
 
 // Sistema de notificaciones de tickets no leídos
 const isUnread = (ticket) => {
-  if (!ticket || !ticket.TicketID || !ticket.UpdatedAt) return false;
-  const lastSeenStr = localStorage.getItem('ticket_last_seen');
-  const lastSeen = lastSeenStr ? JSON.parse(lastSeenStr) : {};
-  if (!lastSeen[ticket.TicketID]) return true;
-  return ticket.UpdatedAt !== lastSeen[ticket.TicketID];
+  return ticket && ticket.unread_count > 0;
 }
 
-const markAsRead = (ticket) => {
-  if (!ticket || !ticket.TicketID) return;
-  const lastSeenStr = localStorage.getItem('ticket_last_seen');
-  const lastSeen = lastSeenStr ? JSON.parse(lastSeenStr) : {};
-  lastSeen[ticket.TicketID] = ticket.UpdatedAt || new Date().toISOString();
-  localStorage.setItem('ticket_last_seen', JSON.stringify(lastSeen));
+const markAsRead = async (ticket) => {
+  if (!ticket || !ticket.TicketID || ticket.unread_count === 0) return;
+  // Actualizar UI inmediatamente
+  ticket.unread_count = 0;
+  
+  try {
+    await api.post(`/api/client/tickets/${ticket.TicketID}/mark-seen`);
+  } catch (error) {
+    console.error('Error marking ticket as seen:', error);
+  }
 }
 
 // Carga de Tickets desde API

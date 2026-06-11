@@ -1286,14 +1286,16 @@ const replyLoading = ref(false)
 
 // Configuración de Estados — colores exactos del MASTER_SCRIPT
 const statusConfig = {
-  'Open':          { label: 'Nuevo',             color: '#2E6DA4' },
-  'Waiting':       { label: 'Esperando resp.',   color: '#D35400' },
-  'Replied':       { label: 'Respondido',        color: '#1D7A4C' },
-  'In Progress':   { label: 'En progreso',       color: '#1A8CFF' },
-  'On Hold':       { label: 'En espera',         color: '#607D8B' },
-  'Waiting Parts': { label: 'En espera piezas',  color: '#7B1FA2' },
-  'Resolved':      { label: 'Resuelto',          color: '#2E7D32' },
-  'Closed':        { label: 'Cerrado',           color: '#455A64' },
+  'Open':                 { label: 'Nuevo',             color: '#2E6DA4' },
+  'Waiting':              { label: 'Esperando resp.',   color: '#D35400' },
+  'Waiting for Customer': { label: 'Esperando cliente', color: '#D35400' },
+  'Replied':              { label: 'Respondido',        color: '#1D7A4C' },
+  'In Progress':          { label: 'En progreso',       color: '#1A8CFF' },
+  'On Hold':              { label: 'En espera',         color: '#607D8B' },
+  'Waiting Parts':        { label: 'En espera piezas',  color: '#7B1FA2' },
+  'Waiting for Parts':    { label: 'En espera piezas',  color: '#7B1FA2' },
+  'Resolved':             { label: 'Resuelto',          color: '#2E7D32' },
+  'Closed':               { label: 'Cerrado',           color: '#455A64' },
 }
 
 const getStatusColor = (status) => statusConfig[status]?.color || '#607D8B'

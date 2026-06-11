@@ -153,7 +153,7 @@
                     </template>
                     <template v-slot:item.AssignedToName="{ item }">
                       <v-chip size="small" :variant="isDarkTheme ? 'tonal' : 'flat'" :color="item.AssignedToName ? (isDarkTheme ? 'info' : 'blue-lighten-4') : (isDarkTheme ? 'grey' : 'grey-lighten-3')" :class="!isDarkTheme ? 'text-black font-weight-bold' : ''">
-                        {{ item.AssignedToName || 'En espera de asignación' }}
+                        {{ item.AssignedToName || 'En espera de asignación' }} <span v-if="item.CoAssignedToName" class="ml-1 text-primary">+ {{ item.CoAssignedToName }}</span>
                       </v-chip>
                     </template>
                   </v-data-table>
@@ -186,7 +186,7 @@
                     </template>
                     <template v-slot:item.AssignedToName="{ item }">
                       <v-chip size="small" :variant="isDarkTheme ? 'tonal' : 'flat'" :color="item.AssignedToName ? (isDarkTheme ? 'info' : 'blue-lighten-4') : (isDarkTheme ? 'grey' : 'grey-lighten-3')" :class="!isDarkTheme ? 'text-black font-weight-bold' : ''">
-                        {{ item.AssignedToName || 'En espera de asignación' }}
+                        {{ item.AssignedToName || 'En espera de asignación' }} <span v-if="item.CoAssignedToName" class="ml-1 text-primary">+ {{ item.CoAssignedToName }}</span>
                       </v-chip>
                     </template>
                   </v-data-table>
@@ -579,6 +579,15 @@
                       variant="flat"
                     >
                       {{ selectedTicket.AssignedEngineerName }}
+                    </v-chip>
+                    <v-chip
+                      v-if="ticketAssignees.length === 0 && selectedTicket.CoAssignedEngineerName"
+                      size="small"
+                      color="info"
+                      variant="tonal"
+                      class="ml-1"
+                    >
+                      + {{ selectedTicket.CoAssignedEngineerName }}
                     </v-chip>
                     <span v-if="ticketAssignees.length === 0 && !selectedTicket.AssignedEngineerName" class="text-caption text-grey">En Cola</span>
                   </div>

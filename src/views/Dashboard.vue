@@ -1335,7 +1335,7 @@ const markAsRead = async (ticket) => {
 const fetchTickets = async (isBackground = false) => {
   if (!isBackground) loading.value = true
   try {
-    const response = await api.get('/api/client/tickets')
+    const response = await api.get(`/api/client/tickets?t=${Date.now()}`)
     tickets.value = response.data
   } catch (error) {
     if (!isBackground) {
@@ -1440,7 +1440,7 @@ const fetchAllTickets = async (isBackground = false) => {
   if (!isAdminOrInovatech.value) return;
   if (!isBackground) loadingAllTickets.value = true
   try {
-    const response = await api.get('/api/client/all-tickets')
+    const response = await api.get(`/api/client/all-tickets?t=${Date.now()}`)
     allTickets.value = response.data
   } catch (e) {
     if (!isBackground) console.error(e)
@@ -1695,7 +1695,7 @@ const viewTicketDetails = async (ticket, isBackground = false) => {
   }
   
   try {
-    const response = await api.get(`/api/client/tickets/${ticket.TicketID}`)
+    const response = await api.get(`/api/client/tickets/${ticket.TicketID}?t=${Date.now()}`)
     const data = response.data
     selectedTicket.value = data.ticket
     // Solo sobreescribir si estamos viendo el ticket
@@ -1743,7 +1743,7 @@ const submitReply = async () => {
     })
     
     // Recargar historial del ticket
-    const response = await api.get(`/api/client/tickets/${ticketId}`)
+    const response = await api.get(`/api/client/tickets/${ticketId}?t=${Date.now()}`)
     ticketMessages.value = response.data.messages
     ticketAttachments.value = response.data.attachments || ticketAttachments.value
     selectedTicket.value = response.data.ticket

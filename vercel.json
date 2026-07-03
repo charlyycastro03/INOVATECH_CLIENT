@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://hop-controversy-therapy-stuart.trycloudflare.com/api/:path*"
+      "destination": "https://board-freight-instructor-actress.trycloudflare.com/api/:path*"
     },
     {
       "source": "/(.*)",

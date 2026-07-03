@@ -665,10 +665,10 @@
                 <div
                   v-for="msg in ticketMessages"
                   :key="msg.ReplyID"
-                  :class="['d-flex flex-column mb-4', msg.UserID === selectedTicket.UserID ? 'align-end' : 'align-start']"
+                  :class="['d-flex flex-column mb-4', msg.UserID == selectedTicket.UserID ? 'align-end' : 'align-start']"
                 >
                   <div class="d-flex align-center mb-1">
-                    <v-avatar :color="msg.UserID === selectedTicket.UserID ? 'secondary' : 'primary'" size="28" class="mr-2">
+                    <v-avatar :color="msg.UserID == selectedTicket.UserID ? 'secondary' : 'primary'" size="28" class="mr-2">
                       <span class="text-white text-caption font-weight-bold">
                         {{ msg.SenderName ? msg.SenderName.substring(0, 2).toUpperCase() : (selectedTicket.AssignedEngineerName ? selectedTicket.AssignedEngineerName.substring(0, 2).toUpperCase() : 'ST') }}
                       </span>
@@ -1748,16 +1748,10 @@ const submitReply = async () => {
     ticketAttachments.value = response.data.attachments || ticketAttachments.value
     selectedTicket.value = response.data.ticket
     
-    // Update the ticket in the local arrays to reflect status changes immediately
     const ticketInList = tickets.value.find(t => t.TicketID === ticketId)
     if (ticketInList) {
       ticketInList.Status = response.data.ticket.Status
     }
-    const allTicketInList = allCompanyTickets.value.find(t => t.TicketID === ticketId)
-    if (allTicketInList) {
-      allTicketInList.Status = response.data.ticket.Status
-    }
-    
     replyText.value = ''
     replyFiles.value = []
   } catch (error) {

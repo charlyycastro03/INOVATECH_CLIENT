@@ -1,8 +1,13 @@
 import axios from 'axios'
 
-// Configura la URL base usando la variable de entorno de Vite o una ruta relativa por defecto
+let rawBaseUrl = import.meta.env.VITE_API_URL || '';
+// Fix double /api if Vercel injects it
+if (rawBaseUrl === '/api') {
+  rawBaseUrl = '';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '',
+  baseURL: rawBaseUrl,
   timeout: 60000,
   headers: {
     'Content-Type': 'application/json'

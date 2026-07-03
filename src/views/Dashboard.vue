@@ -665,10 +665,10 @@
                 <div
                   v-for="msg in ticketMessages"
                   :key="msg.ReplyID"
-                  :class="['d-flex flex-column mb-4', msg.IsAdminMessage ? 'align-start' : 'align-end']"
+                  :class="['d-flex flex-column mb-4', isMyMessage(msg) ? 'align-end' : 'align-start']"
                 >
                   <div class="d-flex align-center mb-1">
-                    <v-avatar :color="!msg.IsAdminMessage ? 'secondary' : 'primary'" size="28" class="mr-2">
+                    <v-avatar :color="isMyMessage(msg) ? 'secondary' : 'primary'" size="28" class="mr-2">
                       <span class="text-white text-caption font-weight-bold">
                         {{ msg.SenderName ? msg.SenderName.substring(0, 2).toUpperCase() : (selectedTicket.AssignedEngineerName ? selectedTicket.AssignedEngineerName.substring(0, 2).toUpperCase() : 'ST') }}
                       </span>
@@ -678,7 +678,7 @@
                   </div>
                   
                   <v-card
-                    :color="msg.UserID === selectedTicket.UserID ? 'rgba(33,150,243,0.15)' : (isDarkTheme ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')"
+                    :color="isMyMessage(msg) ? 'rgba(33,150,243,0.15)' : (isDarkTheme ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')"
                     flat
                     class="pa-3 rounded-lg border border-opacity-10"
                     style="max-width: 85%;"
@@ -1297,6 +1297,20 @@ const statusConfig = {
   'Resolved':             { label: 'Resuelto',          color: '#2E7D32' },
   'Closed':               { label: 'Cerrado',           color: '#455A64' },
 }
+
+const isMyMessage = (msg) => {
+  if (!msg) return false;
+  // Si soy yo quien lo envió, siempre a la derecha
+  const currentUserId = user.value?.uid || user.value?.UserID || user.value?.id;
+  if (String(msg.UserID) === String(currentUserId)) return true;
+  
+  // Si no soy yo, pero es un mensaje de administrador, va a la izquierda
+  if (msg.IsAdminMessage) return false;
+  
+  // Si no soy yo, y no es administrador (ej. compañero de empresa), a la derecha
+  return true;
+}
+
 
 const getStatusColor = (status) => statusConfig[status]?.color || '#607D8B'
 const translateStatus = (status) => statusConfig[status]?.label || status

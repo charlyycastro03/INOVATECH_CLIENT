@@ -665,10 +665,10 @@
                 <div
                   v-for="msg in ticketMessages"
                   :key="msg.ReplyID"
-                  :class="['d-flex flex-column mb-4', msg.UserID == selectedTicket.UserID ? 'align-end' : 'align-start']"
+                  :class="['d-flex flex-column mb-4', msg.IsAdminMessage ? 'align-start' : 'align-end']"
                 >
                   <div class="d-flex align-center mb-1">
-                    <v-avatar :color="msg.UserID == selectedTicket.UserID ? 'secondary' : 'primary'" size="28" class="mr-2">
+                    <v-avatar :color="!msg.IsAdminMessage ? 'secondary' : 'primary'" size="28" class="mr-2">
                       <span class="text-white text-caption font-weight-bold">
                         {{ msg.SenderName ? msg.SenderName.substring(0, 2).toUpperCase() : (selectedTicket.AssignedEngineerName ? selectedTicket.AssignedEngineerName.substring(0, 2).toUpperCase() : 'ST') }}
                       </span>

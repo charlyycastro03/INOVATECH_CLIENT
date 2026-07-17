@@ -217,7 +217,7 @@
                     </template>
                     <template v-slot:item.actions="{ item }">
                       <v-btn icon="mdi-pencil-outline" variant="text" color="info" size="small" @click="editUser(item)" title="Editar"></v-btn>
-                      <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="deleteUser(item)" title="Eliminar" v-if="item.IsActive"></v-btn>
+                      <v-btn :icon="item.IsActive ? 'mdi-account-off-outline' : 'mdi-account-check-outline'" variant="text" :color="item.IsActive ? 'error' : 'success'" size="small" @click="toggleUser(item)" :title="item.IsActive ? 'Desactivar' : 'Reactivar'"></v-btn>
                     </template>
                   </v-data-table>
                 </v-window-item>
@@ -1553,17 +1553,18 @@ const saveUser = async () => {
   }
 }
 
-const deleteUser = async (userItem) => {
-  if (!confirm(`¿Estás seguro de que deseas desactivar al usuario ${userItem.FullName}?`)) return
+const toggleUser = async (userItem) => {
+  const actionText = userItem.IsActive ? 'desactivar' : 'reactivar';
+  if (!confirm(`¿Estás seguro de que deseas ${actionText} al usuario ${userItem.FullName}?`)) return
   try {
-    await api.delete(`/api/client/users/${userItem.UserID}`)
-    globalMsg.value = 'Usuario desactivado correctamente.'
+    const response = await api.patch(`/api/client/users/${userItem.UserID}/toggle-status`)
+    globalMsg.value = response.data.message || `Usuario ${userItem.IsActive ? 'desactivado' : 'reactivado'} correctamente.`
     globalMsgType.value = 'success'
     fetchCompanyUsers()
     fetchAutocompleteUsers()
   } catch (error) {
-    console.error('Error deleting user:', error)
-    globalMsg.value = 'Error al desactivar el usuario.'
+    console.error(`Error al ${actionText} usuario:`, error)
+    globalMsg.value = `Error al ${actionText} el usuario.`
     globalMsgType.value = 'error'
   }
 }
